@@ -342,8 +342,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 33e5c1984a4c74b4d8465ee2edfa8cff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  instanceCount: 100000
-  instanceMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  instanceCount: 10000
+  instanceMesh: {fileID: 4300000, guid: 394ff57e6222f6a49b8053a8947975ff, type: 3}
   instanceMaterial: {fileID: 2100000, guid: 35c3d8273c3550b43ba10ee9a8848750, type: 2}
   subMeshIndex: 0
   compute: {fileID: 7200000, guid: bc19db8f432427d40845e0df5c083d93, type: 3}

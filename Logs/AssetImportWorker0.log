@@ -1,0 +1,294 @@
+Using pre-set license
+Built from '2020.3/china_unity/release' branch; Version is '2020.3.3f1c1 (a34b99c2c582) revision 10701721'; Using compiler version '192528614'; Build Type 'Release'
+OS: 'Windows 10 Pro; OS build 19041.985; Version 2004; 64bit' Language: 'zh' Physical Memory: 16343 MB
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1, IsPro: 0
+
+ COMMAND LINE ARGUMENTS:
+F:\Unity\Editor\Unity.exe
+-adb2
+-batchMode
+-noUpm
+-name
+AssetImportWorker0
+-projectPath
+F:/Project/Unity/ComputeShaderDemo
+-logFile
+Logs/AssetImportWorker0.log
+-srvPort
+63171
+Successfully changed project path to: F:/Project/Unity/ComputeShaderDemo
+F:/Project/Unity/ComputeShaderDemo
+Using Asset Import Pipeline V2.
+Refreshing native plugins compatible for Editor in 23.72 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Initialize engine version: 2020.3.3f1c1 (a34b99c2c582)
+[Subsystems] Discovering subsystems at path F:/Unity/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path F:/Project/Unity/ComputeShaderDemo/Assets
+GfxDevice: creating device client; threaded=0
+Direct3D:
+    Version:  Direct3D 11.0 [level 11.1]
+    Renderer: NVIDIA GeForce GTX 1060 6GB (ID=0x1c03)
+    Vendor:   
+    VRAM:     6052 MB
+    Driver:   27.21.14.5671
+Initialize mono
+Mono path[0] = 'F:/Unity/Editor/Data/Managed'
+Mono path[1] = 'F:/Unity/Editor/Data/MonoBleedingEdge/lib/mono/unityjit'
+Mono config path = 'F:/Unity/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56636
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: F:/Unity/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Registered in 0.001086 seconds.
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 23.19 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Invoked RoslynAnalysisRunner static constructor.
+RoslynAnalysisRunner will not be running.
+RoslynAnalysisRunner has terminated.
+Mono: successfully reloaded assembly
+- Completed reload, in  0.828 seconds
+Platform modules already initialized, skipping
+Registering precompiled user dll's ...
+Registered in 0.000600 seconds.
+Begin MonoManager ReloadAssembly
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 0.19 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Invoked RoslynAnalysisRunner static constructor.
+RoslynAnalysisRunner will not be running.
+RoslynAnalysisRunner has terminated.
+Mono: successfully reloaded assembly
+- Completed reload, in  0.787 seconds
+Platform modules already initialized, skipping
+========================================================================
+Worker process is ready to serve import requests
+Launched and connected shader compiler UnityShaderCompiler.exe after 0.06 seconds
+Refreshing native plugins compatible for Editor in 0.20 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 1120 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 58.2 MB.
+System memory in use after: 58.3 MB.
+
+Unloading 9 unused Assets to reduce memory usage. Loaded Objects now: 1564.
+Total: 2.033700 ms (FindLiveObjects: 0.121300 ms CreateObjectMapping: 0.050400 ms MarkObjects: 1.761800 ms  DeleteObjects: 0.099000 ms)
+
+========================================================================
+Received Import Request.
+  path: Assets/Nicrom/PolyPacks/Wind/Assets/Models/LPW_Flower_A1_H70cm_01.fbx
+  artifactKey: Guid(9715bf1e661b47842977d36abed88781) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Nicrom/PolyPacks/Wind/Assets/Models/LPW_Flower_A1_H70cm_01.fbx using Guid(9715bf1e661b47842977d36abed88781) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'f8af809579e618eabe7b5c43aff65150') in 0.144881 seconds
+  Import took 0.146980 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000270 seconds.
+  path: Assets/Nicrom/PolyPacks/Wind/Assets/Models/LPW_Tree_C1_9m_01.fbx
+  artifactKey: Guid(80d15eccca9181a4386c007b45199982) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Nicrom/PolyPacks/Wind/Assets/Models/LPW_Tree_C1_9m_01.fbx using Guid(80d15eccca9181a4386c007b45199982) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'c25ec54b99d4ac5ad2cf22ab7b21cd6f') in 0.011654 seconds
+  Import took 0.013361 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000300 seconds.
+  path: Assets/Nicrom/PolyPacks/Wind/Assets/Models/LPW_Grass_A1_50cm_01.fbx
+  artifactKey: Guid(02e48aea181058a47acc4c8a06b88f13) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Nicrom/PolyPacks/Wind/Assets/Models/LPW_Grass_A1_50cm_01.fbx using Guid(02e48aea181058a47acc4c8a06b88f13) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '0495611a7f6eef0c8b36bdf92f27a472') in 0.011271 seconds
+  Import took 0.013979 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000345 seconds.
+  path: Assets/Nicrom/PolyPacks/Wind/Assets/Models/LPW_Rock_Boulder_A1_01.fbx
+  artifactKey: Guid(f3a70418971d85f47a436c1493b944d8) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Nicrom/PolyPacks/Wind/Assets/Models/LPW_Rock_Boulder_A1_01.fbx using Guid(f3a70418971d85f47a436c1493b944d8) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '08a8b4d71baa636bdc3a46c2e3f56fff') in 0.033108 seconds
+  Import took 0.036095 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000302 seconds.
+  path: Assets/Nicrom/PolyPacks/Wind/Assets/Models/LPW_Tree_B1_9m_02.fbx
+  artifactKey: Guid(4acbe20131f3a684c914f20a1194b751) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Nicrom/PolyPacks/Wind/Assets/Models/LPW_Tree_B1_9m_02.fbx using Guid(4acbe20131f3a684c914f20a1194b751) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'e0a4357f00adaf3f287921402f23c64c') in 0.011232 seconds
+  Import took 0.013845 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000255 seconds.
+  path: Assets/Nicrom/PolyPacks/Wind/Assets/Models/LPW_Rock_Wall_A1_01.fbx
+  artifactKey: Guid(21e4e23f629a66042b0804449f9cdf4e) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Nicrom/PolyPacks/Wind/Assets/Models/LPW_Rock_Wall_A1_01.fbx using Guid(21e4e23f629a66042b0804449f9cdf4e) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'bc69804cad10eef98c1f444f0b235bd9') in 0.013732 seconds
+  Import took 0.015749 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000248 seconds.
+  path: Assets/Nicrom/PolyPacks/Wind/Assets/Models/LPW_Tree_C1_11m_01.fbx
+  artifactKey: Guid(e27c287717052ac4b903c9f886180c78) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Nicrom/PolyPacks/Wind/Assets/Models/LPW_Tree_C1_11m_01.fbx using Guid(e27c287717052ac4b903c9f886180c78) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '6d4cab6f84ca78bf8e30e17b63d5efba') in 0.011241 seconds
+  Import took 0.013208 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000271 seconds.
+  path: Assets/Nicrom/PolyPacks/Wind/Assets/Models/LPW_Grass_A1_40cm_01.fbx
+  artifactKey: Guid(2b44582523d7fdf48ae9a30dd4e38897) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Nicrom/PolyPacks/Wind/Assets/Models/LPW_Grass_A1_40cm_01.fbx using Guid(2b44582523d7fdf48ae9a30dd4e38897) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'c0a69932e3a2e7b3af4318b619c8d42e') in 0.015705 seconds
+  Import took 0.017824 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000306 seconds.
+  path: Assets/Nicrom/PolyPacks/Wind/Assets/Models/LPW_Tree_B1_9m_01.fbx
+  artifactKey: Guid(086866415dea3c64bb043c7b9c5d5a28) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Nicrom/PolyPacks/Wind/Assets/Models/LPW_Tree_B1_9m_01.fbx using Guid(086866415dea3c64bb043c7b9c5d5a28) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '17579d3e86238b40d70f0f62bda7e998') in 0.016477 seconds
+  Import took 0.018576 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000204 seconds.
+  path: Assets/Nicrom/PolyPacks/Wind/Assets/Models/LPW_Ground_A1_100x100_02.fbx
+  artifactKey: Guid(9900244c1a644074d9fb129310a0542b) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Nicrom/PolyPacks/Wind/Assets/Models/LPW_Ground_A1_100x100_02.fbx using Guid(9900244c1a644074d9fb129310a0542b) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '95349cf3e7ef8dacb140a8ff9c7ee346') in 0.015228 seconds
+  Import took 0.017555 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000218 seconds.
+  path: Assets/Nicrom/PolyPacks/Wind/Assets/Models/LPW_Ground_A1_100x100_01.fbx
+  artifactKey: Guid(dbc5577fb32b294459a6c2b9d3f4d366) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Nicrom/PolyPacks/Wind/Assets/Models/LPW_Ground_A1_100x100_01.fbx using Guid(dbc5577fb32b294459a6c2b9d3f4d366) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'b34bab0ce62a451159c53f24230b53d5') in 0.014118 seconds
+  Import took 0.016444 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000307 seconds.
+  path: Assets/Nicrom/PolyPacks/Wind/Assets/Models/LPW_Tree_A1_6.5m_01.fbx
+  artifactKey: Guid(394ff57e6222f6a49b8053a8947975ff) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Nicrom/PolyPacks/Wind/Assets/Models/LPW_Tree_A1_6.5m_01.fbx using Guid(394ff57e6222f6a49b8053a8947975ff) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '7dfcfa8b9e93d795d5d7a0d96877419e') in 0.011147 seconds
+  Import took 0.013293 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000208 seconds.
+  path: Assets/Nicrom/PolyPacks/Wind/Assets/Models/LPW_Ground_A1_100x100_02.fbx
+  artifactKey: Guid(9900244c1a644074d9fb129310a0542b) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Nicrom/PolyPacks/Wind/Assets/Models/LPW_Ground_A1_100x100_02.fbx using Guid(9900244c1a644074d9fb129310a0542b) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '95349cf3e7ef8dacb140a8ff9c7ee346') in 0.013596 seconds
+  Import took 0.016513 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.002167 seconds.
+  path: Assets/Nicrom/PolyPacks/Wind/Assets/Models/LPW_Tree_A1_6.5m_01.fbx
+  artifactKey: Guid(394ff57e6222f6a49b8053a8947975ff) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Nicrom/PolyPacks/Wind/Assets/Models/LPW_Tree_A1_6.5m_01.fbx using Guid(394ff57e6222f6a49b8053a8947975ff) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '7dfcfa8b9e93d795d5d7a0d96877419e') in 0.010055 seconds
+  Import took 0.012288 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 75.720529 seconds.
+  path: Assets/FrustumCulling/FrustumCulling.compute
+  artifactKey: Guid(bc19db8f432427d40845e0df5c083d93) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/FrustumCulling/FrustumCulling.compute using Guid(bc19db8f432427d40845e0df5c083d93) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '5e752a3cf92e6ea07addef789190a1c0') in 0.005539 seconds
+  Import took 0.007563 seconds .
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.001169 seconds.
+  path: Assets/FrustumCulling/FrustumCulling.compute
+  artifactKey: Guid(bc19db8f432427d40845e0df5c083d93) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/FrustumCulling/FrustumCulling.compute using Guid(bc19db8f432427d40845e0df5c083d93) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '5e752a3cf92e6ea07addef789190a1c0') in 0.002224 seconds
+  Import took 0.004246 seconds .
+
+========================================================================
+Received Prepare
+Registering precompiled user dll's ...
+Registered in 0.000757 seconds.
+Begin MonoManager ReloadAssembly
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 0.22 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Invoked RoslynAnalysisRunner static constructor.
+RoslynAnalysisRunner will not be running.
+RoslynAnalysisRunner has terminated.
+Mono: successfully reloaded assembly
+- Completed reload, in  0.767 seconds
+Platform modules already initialized, skipping
+Refreshing native plugins compatible for Editor in 0.21 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 1112 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 61.3 MB.
+System memory in use after: 61.4 MB.
+
+Unloading 5 unused Assets to reduce memory usage. Loaded Objects now: 1610.
+Total: 2.028300 ms (FindLiveObjects: 0.217900 ms CreateObjectMapping: 0.055200 ms MarkObjects: 1.732900 ms  DeleteObjects: 0.021200 ms)
+
+========================================================================
+Received Prepare
+Registering precompiled user dll's ...
+Registered in 0.001117 seconds.
+Begin MonoManager ReloadAssembly
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 0.22 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Invoked RoslynAnalysisRunner static constructor.
+RoslynAnalysisRunner will not be running.
+RoslynAnalysisRunner has terminated.
+Mono: successfully reloaded assembly
+- Completed reload, in  0.723 seconds
+Platform modules already initialized, skipping
+Refreshing native plugins compatible for Editor in 0.20 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 1112 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 61.4 MB.
+System memory in use after: 61.5 MB.
+
+Unloading 4 unused Assets to reduce memory usage. Loaded Objects now: 1613.
+Total: 1.827500 ms (FindLiveObjects: 0.203400 ms CreateObjectMapping: 0.057900 ms MarkObjects: 1.550200 ms  DeleteObjects: 0.015200 ms)
+
+========================================================================
+Received Prepare
+Registering precompiled user dll's ...
+Registered in 0.000635 seconds.
+Begin MonoManager ReloadAssembly
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 0.20 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Invoked RoslynAnalysisRunner static constructor.
+RoslynAnalysisRunner will not be running.
+RoslynAnalysisRunner has terminated.
+Mono: successfully reloaded assembly
+- Completed reload, in  0.729 seconds
+Platform modules already initialized, skipping
+Refreshing native plugins compatible for Editor in 0.20 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 1112 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 61.4 MB.
+System memory in use after: 61.5 MB.
+
+Unloading 4 unused Assets to reduce memory usage. Loaded Objects now: 1616.
+Total: 2.425000 ms (FindLiveObjects: 0.417400 ms CreateObjectMapping: 0.071800 ms MarkObjects: 1.890200 ms  DeleteObjects: 0.043900 ms)
+
+========================================================================
+Received Prepare
+Registering precompiled user dll's ...
+Registered in 0.000635 seconds.
+Begin MonoManager ReloadAssembly
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 0.21 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Invoked RoslynAnalysisRunner static constructor.
+RoslynAnalysisRunner will not be running.
+RoslynAnalysisRunner has terminated.
+Mono: successfully reloaded assembly
+- Completed reload, in  0.749 seconds
+Platform modules already initialized, skipping
+Refreshing native plugins compatible for Editor in 0.26 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 1112 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 61.4 MB.
+System memory in use after: 61.5 MB.
+
+Unloading 4 unused Assets to reduce memory usage. Loaded Objects now: 1619.
+Total: 2.103400 ms (FindLiveObjects: 0.266400 ms CreateObjectMapping: 0.079300 ms MarkObjects: 1.740100 ms  DeleteObjects: 0.016400 ms)
+
