@@ -7,9 +7,10 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Grass
-  m_Shader: {fileID: 4800000, guid: ee3ad44d63dafc24e9f66c5181713328, type: 3}
-  m_ShaderKeywords: 
+  m_Name: InstanceGrass
+  m_Shader: {fileID: 4800000, guid: 848a8a0fec4212f42a84915c30aed8e8, type: 3}
+  m_ShaderKeywords: _ENABLEHORIZONTALBENDING_ON _ENABLEHORIZONTALMOVEMENT_ON _ENABLEMAINBENDING_ON
+    _ENABLEVERTICALBENDING_ON _ENABLEVERTICALMOVEMENT_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -40,11 +41,15 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 225da740038919f4ca9eaff413945956, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
         m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NoiseTexture:
+        m_Texture: {fileID: 2800000, guid: 325d48ff66bae3245b768b66049c7718, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -52,6 +57,10 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ParallaxMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _texcoord:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -63,16 +72,29 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
+    - _MBAmplitude: 4
+    - _MBAmplitudeOffset: 3
+    - _MBDefaultBending: 0
+    - _MBFrequency: 0.2
+    - _MBFrequencyOffset: 0.1
+    - _MBMaxHeight: 0.4
+    - _MBPhase: 10
+    - _MBWindDir: 90
+    - _MBWindDirOffset: 69
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
+    - _Smoothness: 0
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _UVSec: 0
     - _ZWrite: 1
+    - __dirty: 0
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _NoisePannerSpeed: {r: 0.08, g: 0.04, b: 0, a: 0}
+    - _NoiseTextureTilling: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

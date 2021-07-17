@@ -1,7 +1,8 @@
-#pragma kernel ViewPortCulling
+//视椎剔除+Hiz遮挡剔除
+#pragma kernel GrassCulling
 
-uint instanceCount;
-StructuredBuffer<float4x4> input;
+uint grassCount;
+StructuredBuffer<float4x4> grassBuffer;
 float4 planes[6];
 AppendStructuredBuffer<float4x4> cullresult;
 float3 boundMin = float3(-0.5, -0.5, -0.5);
@@ -15,13 +16,14 @@ bool IsOutsideThePlane(float4 plane, float3 pointPosition)
 }
 
 [numthreads(640, 1, 1)]
-void ViewPortCulling(uint3 id : SV_DispatchThreadID)
+void GrassCulling(uint3 id : SV_DispatchThreadID)
 {
-    if (id.x >= instanceCount)
-        return;
-    float4x4 info = input[id.x];
+    if (id.x >= grassCount) return;
 
-    float4 boundVerts[8];//AABB8个顶点坐标
+    float4x4 info = grassBuffer[id.x];
+
+    //视椎剔除
+    float4 boundVerts[8];
     boundVerts[0] = mul(info, float4(boundMin, 1));
     boundVerts[1] = mul(info, float4(boundMax, 1));
     boundVerts[2] = mul(info, float4(boundMax.x, boundMax.y, boundMin.z, 1));
@@ -31,7 +33,6 @@ void ViewPortCulling(uint3 id : SV_DispatchThreadID)
     boundVerts[6] = mul(info, float4(boundMin.x, boundMax.y, boundMin.z, 1));
     boundVerts[7] = mul(info, float4(boundMin.x, boundMin.y, boundMax.z, 1));
 
-    //如果8个顶点都在某个面外，则肯定在视锥体外面
     for (int i = 0; i < 6; i++)
     {
         for (int j = 0; j < 8; j++)
@@ -44,5 +45,8 @@ void ViewPortCulling(uint3 id : SV_DispatchThreadID)
                 return;
         }
     }
+
+    //Hiz遮挡剔除
+
     cullresult.Append(info);
 }

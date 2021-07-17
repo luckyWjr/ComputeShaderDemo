@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657892, g: 0.4964128, b: 0.5748173, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -224,8 +224,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   grassMesh: {fileID: 4300000, guid: 02e48aea181058a47acc4c8a06b88f13, type: 3}
+  subMeshIndex: 0
   grassMaterial: {fileID: 2100000, guid: 7f52cfde0b450e24a9f1cc86cb1a0433, type: 2}
-  grassDensity: {x: 200, y: 200}
+  GrassCountPerRaw: 300
+  compute: {fileID: 7200000, guid: f521190d28bb6de4ca5c8a9501378caa, type: 3}
 --- !u!64 &528854676
 MeshCollider:
   m_ObjectHideFlags: 0
