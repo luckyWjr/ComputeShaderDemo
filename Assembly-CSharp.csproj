@@ -57,10 +57,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\FrustumCulling\DrawCube.cs" />
+    <Compile Include="Assets\OcclusionCulling\Hiz\GrassGenerator.cs" />
     <Compile Include="Assets\FrustumCulling\CullTool.cs" />
+    <Compile Include="Assets\Particle\DrawParticle.cs" />
+    <Compile Include="Assets\OcclusionCulling\Hiz\DepthTextureGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
+     <None Include="Assets\OcclusionCulling\Hiz\NewUnlitShader.shader" />
+     <None Include="Assets\OcclusionCulling\Hiz\DepthTextureMipmapCalculator.shader" />
+     <None Include="Assets\OcclusionCulling\Hiz\InstanceGrass.shader" />
+     <None Include="Assets\Particle\UpdateParticle.compute" />
+     <None Include="Assets\OcclusionCulling\Hiz\GrassCulling.compute" />
      <None Include="Assets\Nicrom\PolyPacks\Wind\Documentation\LPW_Log.txt" />
+     <None Include="Assets\Particle\ParticleShader.shader" />
      <None Include="Assets\Nicrom\PolyPacks\Wind\Assets\Shaders\ASE\LPW_Vegetation.shader" />
      <None Include="Assets\FrustumCulling\FrustumCulling.compute" />
      <None Include="Assets\FrustumCulling\InstancedShader.shader" />
@@ -285,6 +294,12 @@
     </Reference>
     <Reference Include="UnityEditor.UnityConnectModule">
       <HintPath>F:\Unity\Editor\Data\Managed\UnityEngine\UnityEditor.UnityConnectModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor.iOS.Extensions.Xcode">
+      <HintPath>F:\Unity\Editor\Data\PlaybackEngines\iOSSupport\UnityEditor.iOS.Extensions.Xcode.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor.iOS.Extensions.Common">
+      <HintPath>F:\Unity\Editor\Data\PlaybackEngines\iOSSupport\UnityEditor.iOS.Extensions.Common.dll</HintPath>
     </Reference>
     <Reference Include="netstandard">
       <HintPath>F:\Unity\Editor\Data\NetStandard\ref\2.0.0\netstandard.dll</HintPath>

@@ -8,6 +8,7 @@ public class GrassGenerator : MonoBehaviour
     public int subMeshIndex = 0;
     public Material grassMaterial;
     public int GrassCountPerRaw = 300;//每行草的数量
+    public DepthTextureGenerator depthTextureGenerator;
     public ComputeShader compute;//剔除的ComputeShader
 
     int m_grassCount;
@@ -20,7 +21,7 @@ public class GrassGenerator : MonoBehaviour
     ComputeBuffer cullResultCount;//剔除后的数量
 
     uint[] args = new uint[5] { 0, 0, 0, 0, 0 };
-    uint[] cullResultCountArray = new uint[1] { 0 };    
+    uint[] cullResultCountArray = new uint[1] { 0 };
 
     void Start()
     {
@@ -33,9 +34,8 @@ public class GrassGenerator : MonoBehaviour
             args[2] = grassMesh.GetIndexStart(subMeshIndex);
             args[3] = grassMesh.GetBaseVertex(subMeshIndex);
         }
-        else {
+        else
             args[0] = args[1] = args[2] = args[3] = 0;
-        }
 
         InitComputeBuffer();
         InitGrassPosition();
@@ -51,6 +51,7 @@ public class GrassGenerator : MonoBehaviour
 
     void Update()
     {
+        //Debug.Log("GrassGenerator---Update");
         Vector4[] planes = CullTool.GetFrustumPlane(mainCamera);
 
         compute.SetBuffer(kernel, "grassBuffer", grassBuffer);

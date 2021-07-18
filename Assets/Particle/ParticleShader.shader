@@ -21,8 +21,8 @@ Shader "Unlit/ParticleShader"
 
             struct particleData
             {
-        float3 pos;
-        float4 color;
+                float3 pos;
+                float4 color;
             };
 
             StructuredBuffer<particleData> _particleDataBuffer;
