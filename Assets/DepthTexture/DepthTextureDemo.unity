@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657892, g: 0.4964128, b: 0.5748173, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -130,6 +130,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 8758888183434908315, guid: 2caeb99d3229fee4aa4f3bc8c1c8fc07, type: 3}
+      propertyPath: m_CastShadows
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8758888183437167707, guid: 2caeb99d3229fee4aa4f3bc8c1c8fc07, type: 3}
       propertyPath: m_Name
       value: LPW_Tree_A1_6.5m_01
@@ -247,6 +251,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8672003455027705970, guid: aa0ba387f794005419a74fdfff3da4df, type: 3}
+      propertyPath: m_CastShadows
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: aa0ba387f794005419a74fdfff3da4df, type: 3}
 --- !u!1001 &1125127428
@@ -360,7 +368,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 1
+  near clip plane: 6
   far clip plane: 100
   field of view: 60
   orthographic: 0
@@ -406,6 +414,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d10cff996673d93429a2b25a6257d669, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  showDepthTextureShader: {fileID: 4800000, guid: 62a225f3bbb99f0448ec861856017af4, type: 3}
 --- !u!1001 &1426840154
 PrefabInstance:
   m_ObjectHideFlags: 0
