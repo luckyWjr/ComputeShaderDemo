@@ -5,7 +5,6 @@ using UnityEngine;
 [RequireComponent(typeof(Camera))]
 public class DepthTextureGenerator : MonoBehaviour {
     public Shader depthTextureShader;//用来生成mipmap的shader
-    public RenderTexture temp;
 
     RenderTexture m_depthTexture;//带 mipmap 的深度图
     public RenderTexture depthTexture => m_depthTexture;
@@ -35,9 +34,12 @@ public class DepthTextureGenerator : MonoBehaviour {
         m_depthTexture.Create();
     }
 
+    //void OnPreRender() {
+        
+    //}
+
     //生成mipmap
     void Update() {
-        //Debug.Log("DepthTextureGenerator---OnPreRender");
         int w = m_depthTexture.width;
         int h = m_depthTexture.height;
         int mipmapLevel = 0;
@@ -67,11 +69,10 @@ public class DepthTextureGenerator : MonoBehaviour {
         }
 
         RenderTexture.ReleaseTemporary(preRenderTexture);
-        GameObject.Find("RawImage").GetComponent<UnityEngine.UI.RawImage>().texture = Shader.GetGlobalTexture("_CameraDepthTexture");
     }
 
     void OnDestroy() {
-        m_depthTexture.Release();
+        m_depthTexture?.Release();
         Destroy(m_depthTexture);
     }
 }

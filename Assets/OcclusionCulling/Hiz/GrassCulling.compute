@@ -2,17 +2,22 @@
 #pragma kernel GrassCulling
 
 uint grassCount;
-StructuredBuffer<float4x4> grassBuffer;
-float4 planes[6];
-AppendStructuredBuffer<float4x4> cullresult;
-float3 boundMin = float3(-0.5, -0.5, -0.5);
-float3 boundMax = float3(0.5, 0.5, 0.5);
+StructuredBuffer<float4x4> grassMatrixBuffer;
+bool isOpenGL;
 
-bool IsOutsideThePlane(float4 plane, float3 pointPosition)
+float4x4 vpMatrix;
+AppendStructuredBuffer<float4x4> cullResultBuffer;
+Texture2D hizTexture;
+
+float3 boundMin = float3(-0.15f, 0.0f, -0.2f);
+float3 boundMax = float3(0.15f, 0.5f, 0.2f);
+
+//在Clip Space下，根据齐次坐标做Clipping操作
+bool IsInClipSpace(float4 clipSpacePosition)
 {
-    if (dot(plane.xyz, pointPosition) + plane.w > 0)
-        return true;
-    return false;
+    return clipSpacePosition.x > -clipSpacePosition.w && clipSpacePosition.x < clipSpacePosition.w &&
+        clipSpacePosition.y > -clipSpacePosition.w && clipSpacePosition.y < clipSpacePosition.w &&
+        clipSpacePosition.z > -clipSpacePosition.w && clipSpacePosition.z < clipSpacePosition.w;
 }
 
 [numthreads(640, 1, 1)]
@@ -20,33 +25,63 @@ void GrassCulling(uint3 id : SV_DispatchThreadID)
 {
     if (id.x >= grassCount) return;
 
-    float4x4 info = grassBuffer[id.x];
+    //单个草从View Space变换到World Space的矩阵，即M矩阵
+    float4x4 grassMatrix = grassMatrixBuffer[id.x];
+    //得到单个草的mvp矩阵
+    float4x4 mvpMatrix = mul(vpMatrix, grassMatrix);
 
-    //视椎剔除
+    //包围盒的8个顶点的View Space坐标
     float4 boundVerts[8];
-    boundVerts[0] = mul(info, float4(boundMin, 1));
-    boundVerts[1] = mul(info, float4(boundMax, 1));
-    boundVerts[2] = mul(info, float4(boundMax.x, boundMax.y, boundMin.z, 1));
-    boundVerts[3] = mul(info, float4(boundMax.x, boundMin.y, boundMax.z, 1));
-    boundVerts[4] = mul(info, float4(boundMax.x, boundMin.y, boundMin.z, 1));
-    boundVerts[5] = mul(info, float4(boundMin.x, boundMax.y, boundMax.z, 1));
-    boundVerts[6] = mul(info, float4(boundMin.x, boundMax.y, boundMin.z, 1));
-    boundVerts[7] = mul(info, float4(boundMin.x, boundMin.y, boundMax.z, 1));
+    boundVerts[0] = float4(boundMin, 1);
+    boundVerts[1] = float4(boundMax, 1);
+    boundVerts[2] = float4(boundMax.x, boundMax.y, boundMin.z, 1);
+    boundVerts[3] = float4(boundMax.x, boundMin.y, boundMax.z, 1);
+    boundVerts[4] = float4(boundMax.x, boundMin.y, boundMin.z, 1);
+    boundVerts[5] = float4(boundMin.x, boundMax.y, boundMax.z, 1);
+    boundVerts[6] = float4(boundMin.x, boundMax.y, boundMin.z, 1);
+    boundVerts[7] = float4(boundMin.x, boundMin.y, boundMax.z, 1);
 
-    for (int i = 0; i < 6; i++)
+    //-------------------------------------------------------视椎剔除-------------------------------------------------------
+    
+    //通过mvp矩阵得到顶点的Clip Space的齐次坐标，然后在Clip Space做视椎剔除判断，所有点都不在NDC内就被剔除。
+    for (int i = 0; i < 8; i++)
     {
-        for (int j = 0; j < 8; j++)
-        {
-            float3 boundPosition = boundVerts[j].xyz;
-
-            if (!IsOutsideThePlane(planes[i], boundPosition))
-                break;
-            if (j == 7)
-                return;
-        }
+        if (IsInClipSpace(mul(mvpMatrix, boundVerts[i])))
+            break;
+        if (i == 7)
+            return;
     }
 
-    //Hiz遮挡剔除
+    //-------------------------------------------------------Hiz遮挡剔除-------------------------------------------------------
 
-    cullresult.Append(info);
+    //先计算AABB靠近原点的面的中心点的Clip Space的齐次坐标
+    float4 clipSpacePosition = mul(mvpMatrix, float4(0.0f, boundMax.y * 0.5f, boundMin.z, 1.0f));
+    //转换为NDC的坐标
+    float3 NDCPosition = clipSpacePosition.xyz /= clipSpacePosition.w;
+    //-1到1转换为0到1的uv坐标
+    float2 uv = NDCPosition.xy * 0.5f + 0.5f;
+    //DirextX下NDC的z值即为深度（反转过的）
+    float depth = NDCPosition.z;
+
+    //如果是OpenGL,则 *0.5+0.5
+    //if (isOpenGL)
+        //depth = depth * 0.5f + 0.5f;
+
+    float4 boundPlaneSize = mul(mvpMatrix, boundVerts[2] - boundVerts[0]);
+    boundPlaneSize.xy /= boundPlaneSize.w;
+    boundPlaneSize.xy = boundPlaneSize.xy * 0.5f + 0.5f;
+    float wid = max(boundPlaneSize.x, boundPlaneSize.y) * 1024;
+    uint mips = (uint)clamp(log2(wid), 0, 7);
+    uint scale = 1 << mips;
+
+    uint2 pixel = uv * 1024 / scale;
+    float depthInTexture = min(min(hizTexture.mips[mips][pixel].r, hizTexture.mips[mips][pixel + int2(0, 1)].r), min(hizTexture.mips[mips][pixel + int2(1, 0)].r, hizTexture.mips[mips][pixel + int2(1, 1)].r));
+
+    //if (!isOpenGL)
+        //uv.y = 1.0 - uv.y;
+
+    if (depthInTexture > depth)
+        return;
+
+    cullResultBuffer.Append(grassMatrix);
 }
