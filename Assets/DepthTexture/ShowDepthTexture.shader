@@ -11,7 +11,6 @@ Shader "Custom/ShowDepthTexture"
             #pragma vertex vert
             #pragma fragment frag
 
-            sampler2D _CameraDepthTexture;
 
             struct appdata
             {
@@ -33,6 +32,7 @@ Shader "Custom/ShowDepthTexture"
                 return o;
             }
 
+            sampler2D _CameraDepthTexture;
             float4 frag(v2f input) : Color
             {
                 float depth = tex2D(_CameraDepthTexture, input.uv);
