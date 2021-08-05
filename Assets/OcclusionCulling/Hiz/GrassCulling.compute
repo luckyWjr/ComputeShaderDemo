@@ -2,22 +2,30 @@
 #pragma kernel GrassCulling
 
 uint grassCount;
+uint depthTextureSize;
 StructuredBuffer<float4x4> grassMatrixBuffer;
 bool isOpenGL;
 
+float4 cameraPosition;
+float4 cameraHalfFOVRadian;
 float4x4 vpMatrix;
 AppendStructuredBuffer<float4x4> cullResultBuffer;
 Texture2D hizTexture;
 
-float3 boundMin = float3(-0.15f, 0.0f, -0.2f);
-float3 boundMax = float3(0.15f, 0.5f, 0.2f);
+static float3 boundMin = float3(-0.2f, 0.0f, -0.2f);
+static float3 boundMax = float3(0.2f, 0.5f, 0.2f);
 
 //在Clip Space下，根据齐次坐标做Clipping操作
 bool IsInClipSpace(float4 clipSpacePosition)
 {
-    return clipSpacePosition.x > -clipSpacePosition.w && clipSpacePosition.x < clipSpacePosition.w &&
-        clipSpacePosition.y > -clipSpacePosition.w && clipSpacePosition.y < clipSpacePosition.w &&
-        clipSpacePosition.z > -clipSpacePosition.w && clipSpacePosition.z < clipSpacePosition.w;
+    if(isOpenGL)
+        return clipSpacePosition.x > -clipSpacePosition.w && clipSpacePosition.x < clipSpacePosition.w &&
+            clipSpacePosition.y > -clipSpacePosition.w && clipSpacePosition.y < clipSpacePosition.w &&
+            clipSpacePosition.z > -clipSpacePosition.w && clipSpacePosition.z < clipSpacePosition.w;
+    else
+        return clipSpacePosition.x > -clipSpacePosition.w && clipSpacePosition.x < clipSpacePosition.w &&
+            clipSpacePosition.y > -clipSpacePosition.w && clipSpacePosition.y < clipSpacePosition.w &&
+            clipSpacePosition.z > 0 && clipSpacePosition.z < clipSpacePosition.w;
 }
 
 [numthreads(640, 1, 1)]
@@ -29,7 +37,7 @@ void GrassCulling(uint3 id : SV_DispatchThreadID)
     float4x4 grassMatrix = grassMatrixBuffer[id.x];
     //得到单个草的mvp矩阵
     float4x4 mvpMatrix = mul(vpMatrix, grassMatrix);
-
+    
     //包围盒的8个顶点的View Space坐标
     float4 boundVerts[8];
     boundVerts[0] = float4(boundMin, 1);
@@ -42,7 +50,6 @@ void GrassCulling(uint3 id : SV_DispatchThreadID)
     boundVerts[7] = float4(boundMin.x, boundMin.y, boundMax.z, 1);
 
     //-------------------------------------------------------视椎剔除-------------------------------------------------------
-    
     //通过mvp矩阵得到顶点的Clip Space的齐次坐标，然后在Clip Space做视椎剔除判断，所有点都不在NDC内就被剔除。
     for (int i = 0; i < 8; i++)
     {
@@ -53,11 +60,11 @@ void GrassCulling(uint3 id : SV_DispatchThreadID)
     }
 
     //-------------------------------------------------------Hiz遮挡剔除-------------------------------------------------------
-
-    //先计算AABB靠近原点的面的中心点的Clip Space的齐次坐标
-    float4 clipSpacePosition = mul(mvpMatrix, float4(0.0f, boundMax.y * 0.5f, boundMin.z, 1.0f));
+    //获取每个草的深度采样点
+    float3 samplePoint = float3(0, (boundMax.y - boundMin.y) * 0.5f, 0) + normalize(grassMatrix._14_24_34 - cameraPosition.xyz) * boundMin.x;
+    float4 clipSpacePosition = mul(mvpMatrix, float4(samplePoint, 1.0f));
     //转换为NDC的坐标
-    float3 NDCPosition = clipSpacePosition.xyz /= clipSpacePosition.w;
+    float3 NDCPosition = clipSpacePosition.xyz / clipSpacePosition.w;
     //-1到1转换为0到1的uv坐标
     float2 uv = NDCPosition.xy * 0.5f + 0.5f;
     //DirextX下NDC的z值即为深度（反转过的）
@@ -67,15 +74,16 @@ void GrassCulling(uint3 id : SV_DispatchThreadID)
     //if (isOpenGL)
         //depth = depth * 0.5f + 0.5f;
 
-    float4 boundPlaneSize = mul(mvpMatrix, boundVerts[2] - boundVerts[0]);
-    boundPlaneSize.xy /= boundPlaneSize.w;
-    boundPlaneSize.xy = boundPlaneSize.xy * 0.5f + 0.5f;
-    float wid = max(boundPlaneSize.x, boundPlaneSize.y) * 1024;
-    uint mips = (uint)clamp(log2(wid), 0, 7);
-    uint scale = 1 << mips;
-
-    uint2 pixel = uv * 1024 / scale;
-    float depthInTexture = min(min(hizTexture.mips[mips][pixel].r, hizTexture.mips[mips][pixel + int2(0, 1)].r), min(hizTexture.mips[mips][pixel + int2(1, 0)].r, hizTexture.mips[mips][pixel + int2(1, 1)].r));
+    //根据草的AABB高度计算当前草占用了多少个像素
+    float heightInScreen = (boundMax.y - boundMin.y) / (tan(cameraHalfFOVRadian) * clipSpacePosition.w * 2) * depthTextureSize;
+    //计算应该读取哪层mipmap
+    uint mipmapLevel = (uint)clamp(log2(heightInScreen), 0, log2(depthTextureSize) - 4);
+    //当前mipmap的大小
+    uint size = depthTextureSize / (1 << mipmapLevel);
+    uint2 pixel = uint2(uv * size);
+    if (pixel.x >= size - 1)
+        pixel.x = size - 2;
+    float depthInTexture = min(min(hizTexture.mips[mipmapLevel][pixel].r, hizTexture.mips[mipmapLevel][pixel + int2(0, 1)].r), min(hizTexture.mips[mipmapLevel][pixel + int2(1, 0)].r, hizTexture.mips[mipmapLevel][pixel + int2(1, 1)].r));
 
     //if (!isOpenGL)
         //uv.y = 1.0 - uv.y;

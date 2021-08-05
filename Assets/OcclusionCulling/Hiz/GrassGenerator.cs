@@ -23,7 +23,7 @@ public class GrassGenerator : MonoBehaviour
     uint[] args = new uint[5] { 0, 0, 0, 0, 0 };
     uint[] cullResultCountArray = new uint[1] { 0 };
 
-    int cullResultBufferId, vpMatrixId, positionBufferId, hizTextureId;
+    int cullResultBufferId, vpMatrixId, positionBufferId, hizTextureId, cameraPositionId, cameraHalfFOVRadianId;
 
     void Start()
     {
@@ -46,6 +46,7 @@ public class GrassGenerator : MonoBehaviour
     void InitComputeShader() {
         kernel = compute.FindKernel("GrassCulling");
         compute.SetInt("grassCount", m_grassCount);
+        compute.SetInt("depthTextureSize", depthTextureGenerator.depthTextureSize);
         compute.SetBool("isOpenGL", Camera.main.projectionMatrix.Equals(GL.GetGPUProjectionMatrix(Camera.main.projectionMatrix, false)));
         compute.SetBuffer(kernel, "grassMatrixBuffer", grassMatrixBuffer);
         
@@ -53,6 +54,8 @@ public class GrassGenerator : MonoBehaviour
         vpMatrixId = Shader.PropertyToID("vpMatrix");
         hizTextureId = Shader.PropertyToID("hizTexture");
         positionBufferId = Shader.PropertyToID("positionBuffer");
+        cameraPositionId = Shader.PropertyToID("cameraForward");
+        cameraHalfFOVRadianId = Shader.PropertyToID("cameraHalfFOVRadian");
     }
 
     void InitComputeBuffer() {
@@ -65,6 +68,8 @@ public class GrassGenerator : MonoBehaviour
 
     void Update()
     {
+        compute.SetVector(cameraPositionId, mainCamera.transform.position);
+        compute.SetFloat(cameraHalfFOVRadianId, mainCamera.fieldOfView * 0.5f * Mathf.Deg2Rad);
         compute.SetTexture(kernel, hizTextureId, depthTextureGenerator.depthTexture);
         compute.SetMatrix(vpMatrixId, GL.GetGPUProjectionMatrix(mainCamera.projectionMatrix, false) * mainCamera.worldToCameraMatrix);
         cullResultBuffer.SetCounterValue(0);
@@ -92,9 +97,7 @@ public class GrassGenerator : MonoBehaviour
             for(int j = 0; j < GrassCountPerRaw; j++) {
                 Vector2 xz = new Vector2(widthStart + step * i, widthStart + step * j);
                 Vector3 position = new Vector3(xz.x, GetGroundHeight(xz), xz.y);
-                float size = 1;
-                //Random.Range(0.5f, 1.5f);
-                grassMatrixs[i * GrassCountPerRaw + j] = Matrix4x4.TRS(position, Quaternion.identity, new Vector3(size, size, size));
+                grassMatrixs[i * GrassCountPerRaw + j] = Matrix4x4.TRS(position, Quaternion.identity, Vector3.one);
             }
         }
         grassMatrixBuffer.SetData(grassMatrixs);

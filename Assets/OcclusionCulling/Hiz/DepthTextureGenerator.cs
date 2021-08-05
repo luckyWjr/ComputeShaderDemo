@@ -9,6 +9,15 @@ public class DepthTextureGenerator : MonoBehaviour {
     RenderTexture m_depthTexture;//带 mipmap 的深度图
     public RenderTexture depthTexture => m_depthTexture;
 
+    int m_depthTextureSize = 0;
+    public int depthTextureSize {
+        get {
+            if(m_depthTextureSize == 0)
+                m_depthTextureSize = Mathf.NextPowerOfTwo(Mathf.Max(Screen.width, Screen.height));
+            return m_depthTextureSize;
+        }
+    }
+
     Material m_depthTextureMaterial;
     const RenderTextureFormat m_depthTextureFormat = RenderTextureFormat.RHalf;//深度取值范围0-1，单通道即可。
 
@@ -27,7 +36,7 @@ public class DepthTextureGenerator : MonoBehaviour {
 
     void InitDepthTexture() {
         if(m_depthTexture != null) return;
-        m_depthTexture = new RenderTexture(1024, 1024, 0, m_depthTextureFormat);
+        m_depthTexture = new RenderTexture(depthTextureSize, depthTextureSize, 0, m_depthTextureFormat);
         m_depthTexture.autoGenerateMips = false;
         m_depthTexture.useMipMap = true;
         m_depthTexture.filterMode = FilterMode.Point;
