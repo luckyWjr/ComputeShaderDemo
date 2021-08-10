@@ -71,9 +71,6 @@ void GrassCulling(uint3 id : SV_DispatchThreadID)
     //DirextX下NDC的z值即为深度（反转过的）
     float depth = NDCPosition.z;
 
-    //if (isOpenGL)
-        //uv.y = 1.0 - uv.y;
-
     //如果是OpenGL,则 *0.5+0.5 转换到 0-1 的值
     if (isOpenGL)
         depth = depth * 0.5f + 0.5f;

@@ -54,13 +54,13 @@ public class DepthTextureGenerator : MonoBehaviour {
         
         //如果当前的mipmap的宽高大于8，则计算下一层的mipmap
         while(h > 8) {
-            m_depthTextureMaterial.SetVector(m_uvSizePerPixelShaderID, new Vector4(1.0f / w, 1.0f / h, 0, 0));
 
             currentRenderTexture = RenderTexture.GetTemporary(w, h, 0, m_depthTextureFormat);
             currentRenderTexture.filterMode = FilterMode.Point;
             if(preRenderTexture == null)
                 Graphics.Blit(Shader.GetGlobalTexture("_CameraDepthTexture"), currentRenderTexture);
             else {
+                m_depthTextureMaterial.SetVector(m_uvSizePerPixelShaderID, new Vector4(1.0f / w, 1.0f / h, 0, 0));
                 m_depthTextureMaterial.SetTexture(m_depthTextureShaderID, preRenderTexture);
                 Graphics.Blit(null, currentRenderTexture, m_depthTextureMaterial);
                 RenderTexture.ReleaseTemporary(preRenderTexture);

@@ -45,11 +45,11 @@ Shader "Custom/DepthTextureMipmapCalculator"
                 depth.z = tex2D(preMipmap, uv2);
                 depth.w = tex2D(preMipmap, uv3);
 
-//#if defined(UNITY_REVERSED_Z)
+#if defined(UNITY_REVERSED_Z)
                 return min(min(depth.x, depth.y), min(depth.z, depth.w));
-//#else
-                //return max(max(depth.x, depth.y), max(depth.z, depth.w));
-//#endif
+#else
+                return max(max(depth.x, depth.y), max(depth.z, depth.w));
+#endif
             }
 
             v2f vert(appdata v)
