@@ -1,20 +1,20 @@
 //视椎剔除+Hiz遮挡剔除
 #pragma kernel GrassCulling
 
-uint grassCount;
-uint depthTextureSize;
-StructuredBuffer<float4x4> grassMatrixBuffer;
-bool isOpenGL;
+uint grassCount;//草的总数量
+uint depthTextureSize;//原始深度图的大小
+StructuredBuffer<float4x4> grassMatrixBuffer;//所有草的M矩阵
+bool isOpenGL;//是否是OpenGL的API
 
-float4 cameraPosition;
-float4 cameraHalfFOVRadian;
-float4x4 vpMatrix;
-AppendStructuredBuffer<float4x4> cullResultBuffer;
-Texture2D hizTexture;
+float4 cameraForward;//相机朝向
+float4 cameraHalfFOVRadian;//相机一半的FOV对应的弧度
+float4x4 vpMatrix;//相机的VP矩阵
+AppendStructuredBuffer<float4x4> cullResultBuffer;//剔除后保留的草
+Texture2D hizTexture;//hiz纹理
 
-static float3 boundMin = float3(-0.2f, 0.0f, -0.2f);
-static float3 boundMax = float3(0.2f, 0.5f, 0.2f);
-static float3x3 zRotateToxMatrix = float3x3(0, 0, 1, 0, 1 ,0, -1, 0, 0);
+static float3 boundMin = float3(-0.2f, 0.0f, -0.2f);//包围盒最小点
+static float3 boundMax = float3(0.2f, 0.5f, 0.2f);//包围盒最大点
+static float3x3 zRotateToxMatrix = float3x3(0, 0, 1, 0, 1 ,0, -1, 0, 0);//(0,0,1)旋转到(1,0,0)的矩阵
 
 //在Clip Space下，根据齐次坐标做Clipping操作
 bool IsInClipSpace(float4 clipSpacePosition)
@@ -62,8 +62,7 @@ void GrassCulling(uint3 id : SV_DispatchThreadID)
 
     //-------------------------------------------------------Hiz遮挡剔除-------------------------------------------------------
     //获取每个草的深度采样点
-    float3 cameraToGrass = normalize(grassMatrix._14_24_34 - cameraPosition.xyz);
-    float3 samplePoint = float3(0, (boundMax.y - boundMin.y) * 0.5f, 0) + cameraToGrass * boundMin.x + mul(zRotateToxMatrix, cameraToGrass) * boundMin.x;
+    float3 samplePoint = float3(0, (boundMax.y - boundMin.y) * 0.5f, 0) + cameraForward * boundMin.x + mul(zRotateToxMatrix, cameraForward) * boundMin.x;
     float4 clipSpacePosition = mul(mvpMatrix, float4(samplePoint, 1.0f));
     //转换为NDC的坐标
     float3 NDCPosition = clipSpacePosition.xyz / clipSpacePosition.w;
