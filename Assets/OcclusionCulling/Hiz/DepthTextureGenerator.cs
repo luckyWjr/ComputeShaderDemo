@@ -43,19 +43,15 @@ public class DepthTextureGenerator : MonoBehaviour {
         m_depthTexture.Create();
     }
 
-    //void OnPreRender() {
-        
-    //}
-
     //生成mipmap
-    void Update() {
+    void OnPostRender() {
         int w = m_depthTexture.width;
         int h = m_depthTexture.height;
         int mipmapLevel = 0;
 
         RenderTexture currentRenderTexture = null;//当前mipmapLevel对应的mipmap
         RenderTexture preRenderTexture = null;//上一层的mipmap，即mipmapLevel-1对应的mipmap
-
+        
         //如果当前的mipmap的宽高大于8，则计算下一层的mipmap
         while(h > 8) {
             m_depthTextureMaterial.SetVector(m_uvSizePerPixelShaderID, new Vector4(1.0f / w, 1.0f / h, 0, 0));
@@ -76,7 +72,6 @@ public class DepthTextureGenerator : MonoBehaviour {
             h /= 2;
             mipmapLevel++;
         }
-
         RenderTexture.ReleaseTemporary(preRenderTexture);
     }
 
