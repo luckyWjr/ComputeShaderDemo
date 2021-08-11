@@ -21,15 +21,15 @@ public class DepthTextureGenerator : MonoBehaviour {
     Material m_depthTextureMaterial;
     const RenderTextureFormat m_depthTextureFormat = RenderTextureFormat.RHalf;//深度取值范围0-1，单通道即可。
 
+    int m_textureSizeShaderID;
     int m_depthTextureShaderID;
-    int m_uvSizePerPixelShaderID;
 
     void Start() {
         m_depthTextureMaterial = new Material(depthTextureShader);
         Camera.main.depthTextureMode |= DepthTextureMode.Depth;
 
-        m_depthTextureShaderID = Shader.PropertyToID("_DepthTexture");
-        m_uvSizePerPixelShaderID = Shader.PropertyToID("_UVSizePerPixel");
+        m_textureSizeShaderID = Shader.PropertyToID("_MainTexSize");
+        m_depthTextureShaderID = Shader.PropertyToID("_CameraDepthTexture");
 
         InitDepthTexture();
     }
@@ -46,30 +46,29 @@ public class DepthTextureGenerator : MonoBehaviour {
     //生成mipmap
     void OnPostRender() {
         int w = m_depthTexture.width;
-        int h = m_depthTexture.height;
         int mipmapLevel = 0;
 
         RenderTexture currentRenderTexture = null;//当前mipmapLevel对应的mipmap
         RenderTexture preRenderTexture = null;//上一层的mipmap，即mipmapLevel-1对应的mipmap
-        
-        //如果当前的mipmap的宽高大于8，则计算下一层的mipmap
-        while(h > 8) {
 
-            currentRenderTexture = RenderTexture.GetTemporary(w, h, 0, m_depthTextureFormat);
+        //如果当前的mipmap的宽高大于8，则计算下一层的mipmap
+        while(w > 8) {
+            currentRenderTexture = RenderTexture.GetTemporary(w, w, 0, m_depthTextureFormat);
             currentRenderTexture.filterMode = FilterMode.Point;
-            if(preRenderTexture == null)
-                Graphics.Blit(Shader.GetGlobalTexture("_CameraDepthTexture"), currentRenderTexture);
+            if(preRenderTexture == null) {
+                //Mipmap[0]即copy原始的深度图
+                Graphics.Blit(Shader.GetGlobalTexture(m_depthTextureShaderID), currentRenderTexture);
+            }
             else {
-                m_depthTextureMaterial.SetVector(m_uvSizePerPixelShaderID, new Vector4(1.0f / w, 1.0f / h, 0, 0));
-                m_depthTextureMaterial.SetTexture(m_depthTextureShaderID, preRenderTexture);
-                Graphics.Blit(null, currentRenderTexture, m_depthTextureMaterial);
+                //将Mipmap[i] Blit到Mipmap[i+1]上
+                m_depthTextureMaterial.SetInt(m_textureSizeShaderID, w);
+                Graphics.Blit(preRenderTexture, currentRenderTexture, m_depthTextureMaterial);
                 RenderTexture.ReleaseTemporary(preRenderTexture);
             }
             Graphics.CopyTexture(currentRenderTexture, 0, 0, m_depthTexture, 0, mipmapLevel);
             preRenderTexture = currentRenderTexture;
 
             w /= 2;
-            h /= 2;
             mipmapLevel++;
         }
         RenderTexture.ReleaseTemporary(preRenderTexture);

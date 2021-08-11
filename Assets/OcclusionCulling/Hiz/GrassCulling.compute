@@ -62,7 +62,7 @@ void GrassCulling(uint3 id : SV_DispatchThreadID)
 
     //-------------------------------------------------------Hiz遮挡剔除-------------------------------------------------------
     //获取每个草的深度采样点
-    float3 samplePoint = float3(0, (boundMax.y - boundMin.y) * 0.5f, 0) + cameraForward * boundMin.x + mul(zRotateToxMatrix, cameraForward) * boundMin.x;
+    float3 samplePoint = float3(0, 0, 0) + cameraForward * boundMin.x + mul(zRotateToxMatrix, cameraForward) * boundMin.x;
     float4 clipSpacePosition = mul(mvpMatrix, float4(samplePoint, 1.0f));
     //转换为NDC的坐标
     float3 NDCPosition = clipSpacePosition.xyz / clipSpacePosition.w;
