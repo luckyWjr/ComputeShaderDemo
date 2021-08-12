@@ -6,15 +6,12 @@ uint depthTextureSize;//原始深度图的大小
 StructuredBuffer<float4x4> grassMatrixBuffer;//所有草的M矩阵
 bool isOpenGL;//是否是OpenGL的API
 
-float4 cameraForward;//相机朝向
-float4 cameraHalfFOVRadian;//相机一半的FOV对应的弧度
 float4x4 vpMatrix;//相机的VP矩阵
 AppendStructuredBuffer<float4x4> cullResultBuffer;//剔除后保留的草
 Texture2D hizTexture;//hiz纹理
 
-static float3 boundMin = float3(-0.2f, 0.0f, -0.2f);//包围盒最小点
-static float3 boundMax = float3(0.2f, 0.5f, 0.2f);//包围盒最大点
-static float3x3 zRotateToxMatrix = float3x3(0, 0, 1, 0, 1 ,0, -1, 0, 0);//(0,0,1)旋转到(1,0,0)的矩阵
+static float3 boundMin = float3(-0.2f, 0.0f, -0.3f);//包围盒最小点
+static float3 boundMax = float3(0.2f, 0.5f, 0.3f);//包围盒最大点
 
 //在Clip Space下，根据齐次坐标做Clipping操作
 bool IsInClipSpace(float4 clipSpacePosition)
@@ -38,7 +35,7 @@ void GrassCulling(uint3 id : SV_DispatchThreadID)
     float4x4 grassMatrix = grassMatrixBuffer[id.x];
     //得到单个草的mvp矩阵
     float4x4 mvpMatrix = mul(vpMatrix, grassMatrix);
-    
+
     //包围盒的8个顶点的View Space坐标
     float4 boundVerts[8];
     boundVerts[0] = float4(boundMin, 1);
@@ -50,53 +47,76 @@ void GrassCulling(uint3 id : SV_DispatchThreadID)
     boundVerts[6] = float4(boundMin.x, boundMax.y, boundMin.z, 1);
     boundVerts[7] = float4(boundMin.x, boundMin.y, boundMax.z, 1);
 
+    float minX = 1, minY = 1, minZ = 1, maxX = -1, maxY = -1;//NDC下新的的AABB各个参数
+
     //-------------------------------------------------------视椎剔除-------------------------------------------------------
     //通过mvp矩阵得到顶点的Clip Space的齐次坐标，然后在Clip Space做视椎剔除判断，所有点都不在NDC内就被剔除。
+    bool isInClipSpace = false;
     for (int i = 0; i < 8; i++)
     {
-        if (IsInClipSpace(mul(mvpMatrix, boundVerts[i])))
-            break;
-        if (i == 7)
-            return;
+        float4 clipSpace = mul(mvpMatrix, boundVerts[i]);
+        if (!isInClipSpace && IsInClipSpace(clipSpace))
+            isInClipSpace = true;
+
+        //计算该草ndc下的AABB
+        float3 ndc = clipSpace.xyz / clipSpace.w;
+        if (minX > ndc.x) minX = ndc.x;
+        if (minY > ndc.y) minY = ndc.y;
+        if (minZ > ndc.z) minZ = ndc.z;
+        if (maxX < ndc.x) maxX = ndc.x;
+        if (maxY < ndc.y) maxY = ndc.y;
     }
+    if (!isInClipSpace)
+        return;
 
     //-------------------------------------------------------Hiz遮挡剔除-------------------------------------------------------
-    //获取每个草的深度采样点
-    float3 samplePoint = float3(0, 0, 0) + cameraForward * boundMin.x + mul(zRotateToxMatrix, cameraForward) * boundMin.x;
-    float4 clipSpacePosition = mul(mvpMatrix, float4(samplePoint, 1.0f));
-    //转换为NDC的坐标
-    float3 NDCPosition = clipSpacePosition.xyz / clipSpacePosition.w;
-    //-1到1转换为0到1的uv坐标
-    float2 uv = NDCPosition.xy * 0.5f + 0.5f;
+    //ndc的AABB的左下角和右上角的uv坐标，ndc的-1到1转换为uv的0到1
+    float2 uvLeftBottom = float2(minX, minY) * 0.5f + 0.5f;
+    float2 uvRightTop = float2(maxX, maxY) * 0.5f + 0.5f;
     //DirextX下NDC的z值即为深度（反转过的）
-    float depth = NDCPosition.z;
+    float depth = minZ;
 
     //如果是OpenGL,则 *0.5+0.5 转换到 0-1 的值
     if (isOpenGL)
         depth = depth * 0.5f + 0.5f;
 
-    //根据草的AABB高度计算当前草占用了多少个像素
-    float heightInScreen = (boundMax.y - boundMin.y) / (tan(cameraHalfFOVRadian) * clipSpacePosition.w * 2) * depthTextureSize;
     //计算应该读取哪层mipmap
-    uint mipmapLevel = (uint)clamp(log2(heightInScreen), 0, log2(depthTextureSize) - 4);
+    uint mipmapLevel = (uint)clamp(log2(max(maxX - minX, maxY - minY) / 2 * depthTextureSize), 0, log2(depthTextureSize) - 4);
     //当前mipmap的大小
     uint size = depthTextureSize / (1 << mipmapLevel);
-    uint2 pixel = uint2(clamp(uv.x * size, 0, size - 1), clamp(uv.y * size, 0, size - 1));
 
-    float depthInTexture = hizTexture.mips[mipmapLevel][pixel].r;
-
+    //左下角和右下角点所在的像素
+    uint2 pixelLeftBottom = uint2(clamp(uvLeftBottom.x * size, 0, size - 1), clamp(uvLeftBottom.y * size, 0, size - 1));
+    uint2 pixelRightTop = uint2(clamp(uvRightTop.x * size, 0, size - 1), clamp(uvRightTop.y * size, 0, size - 1));
+    //采样对应深度图的对应像素的深度值，并且作比较
+    float depthInTexture = hizTexture.mips[mipmapLevel][pixelLeftBottom].r;
     if (isOpenGL) {
-        if (pixel.x < size - 1 && pixel.y < size - 1)
-            depthInTexture = max(max(depthInTexture, hizTexture.mips[mipmapLevel][pixel + int2(0, 1)].r), max(hizTexture.mips[mipmapLevel][pixel + int2(1, 0)].r, hizTexture.mips[mipmapLevel][pixel + int2(1, 1)].r));
+        if (pixelLeftBottom.x < pixelRightTop.x && pixelLeftBottom.y < pixelRightTop.y) {
+            depthInTexture = max(max(depthInTexture, hizTexture.mips[mipmapLevel][pixelRightTop].r),
+                max(hizTexture.mips[mipmapLevel][int2(pixelLeftBottom.x, pixelRightTop.y)].r, hizTexture.mips[mipmapLevel][int2(pixelRightTop.x, pixelLeftBottom.y)].r));
+        }
+        else if (pixelLeftBottom.x < pixelRightTop.x)
+            depthInTexture = max(depthInTexture, hizTexture.mips[mipmapLevel][int2(pixelRightTop.x, pixelLeftBottom.y)].r);
+        else if (pixelLeftBottom.y < pixelRightTop.y)
+            depthInTexture = max(depthInTexture, hizTexture.mips[mipmapLevel][int2(pixelLeftBottom.x, pixelRightTop.y)].r);
+
         if (depthInTexture < depth)
             return;
     }
     else {
-        if (pixel.x < size - 1 && pixel.y < size - 1)
-            depthInTexture = min(min(depthInTexture, hizTexture.mips[mipmapLevel][pixel + int2(0, 1)].r), min(hizTexture.mips[mipmapLevel][pixel + int2(1, 0)].r, hizTexture.mips[mipmapLevel][pixel + int2(1, 1)].r));
+        if (pixelLeftBottom.x < pixelRightTop.x && pixelLeftBottom.y < pixelRightTop.y) {
+            depthInTexture = min(min(depthInTexture, hizTexture.mips[mipmapLevel][pixelRightTop].r),
+                min(hizTexture.mips[mipmapLevel][int2(pixelLeftBottom.x, pixelRightTop.y)].r, hizTexture.mips[mipmapLevel][int2(pixelRightTop.x, pixelLeftBottom.y)].r));
+        }
+        else if (pixelLeftBottom.x < pixelRightTop.x)
+            depthInTexture = min(depthInTexture, hizTexture.mips[mipmapLevel][int2(pixelRightTop.x, pixelLeftBottom.y)].r);
+        else if (pixelLeftBottom.y < pixelRightTop.y)
+            depthInTexture = min(depthInTexture, hizTexture.mips[mipmapLevel][int2(pixelLeftBottom.x, pixelRightTop.y)].r);
+
         if (depthInTexture > depth)
             return;
     }
 
+    //视椎剔除和遮挡剔除后的存活的仔
     cullResultBuffer.Append(grassMatrix);
 }

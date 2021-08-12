@@ -23,7 +23,7 @@ public class GrassGenerator : MonoBehaviour
     uint[] args = new uint[5] { 0, 0, 0, 0, 0 };
     uint[] cullResultCountArray = new uint[1] { 0 };
 
-    int cullResultBufferId, vpMatrixId, positionBufferId, hizTextureId, cameraForwardId, cameraHalfFOVRadianId;
+    int cullResultBufferId, vpMatrixId, positionBufferId, hizTextureId;
 
     void Start()
     {
@@ -54,8 +54,6 @@ public class GrassGenerator : MonoBehaviour
         vpMatrixId = Shader.PropertyToID("vpMatrix");
         hizTextureId = Shader.PropertyToID("hizTexture");
         positionBufferId = Shader.PropertyToID("positionBuffer");
-        cameraForwardId = Shader.PropertyToID("cameraForward");
-        cameraHalfFOVRadianId = Shader.PropertyToID("cameraHalfFOVRadian");
     }
 
     void InitComputeBuffer() {
@@ -68,8 +66,6 @@ public class GrassGenerator : MonoBehaviour
 
     void Update()
     {
-        compute.SetVector(cameraForwardId, mainCamera.transform.forward);
-        compute.SetFloat(cameraHalfFOVRadianId, mainCamera.fieldOfView * 0.5f * Mathf.Deg2Rad);
         compute.SetTexture(kernel, hizTextureId, depthTextureGenerator.depthTexture);
         compute.SetMatrix(vpMatrixId, GL.GetGPUProjectionMatrix(mainCamera.projectionMatrix, false) * mainCamera.worldToCameraMatrix);
         cullResultBuffer.SetCounterValue(0);
