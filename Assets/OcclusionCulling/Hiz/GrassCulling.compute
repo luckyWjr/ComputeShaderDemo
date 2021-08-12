@@ -47,7 +47,7 @@ void GrassCulling(uint3 id : SV_DispatchThreadID)
     boundVerts[6] = float4(boundMin.x, boundMax.y, boundMin.z, 1);
     boundVerts[7] = float4(boundMin.x, boundMin.y, boundMax.z, 1);
 
-    float minX = 1, minY = 1, minZ = 1, maxX = -1, maxY = -1;//NDC下新的的AABB各个参数
+    float minX = 1, minY = 1, minZ = 1, maxX = -1, maxY = -1, maxZ = -1;//NDC下新的的AABB各个参数
 
     //-------------------------------------------------------视椎剔除-------------------------------------------------------
     //通过mvp矩阵得到顶点的Clip Space的齐次坐标，然后在Clip Space做视椎剔除判断，所有点都不在NDC内就被剔除。
@@ -65,6 +65,7 @@ void GrassCulling(uint3 id : SV_DispatchThreadID)
         if (minZ > ndc.z) minZ = ndc.z;
         if (maxX < ndc.x) maxX = ndc.x;
         if (maxY < ndc.y) maxY = ndc.y;
+        if (maxZ < ndc.z) maxZ = ndc.z;
     }
     if (!isInClipSpace)
         return;
@@ -73,13 +74,14 @@ void GrassCulling(uint3 id : SV_DispatchThreadID)
     //ndc的AABB的左下角和右上角的uv坐标，ndc的-1到1转换为uv的0到1
     float2 uvLeftBottom = float2(minX, minY) * 0.5f + 0.5f;
     float2 uvRightTop = float2(maxX, maxY) * 0.5f + 0.5f;
-    //DirextX下NDC的z值即为深度（反转过的）
-    float depth = minZ;
+    //DirextX下NDC的z值即为深度（因为MVP变换后是反转过的，所以要取最大的那个值）
+    float depth = maxZ;
 
-    //如果是OpenGL,则 *0.5+0.5 转换到 0-1 的值
-    if (isOpenGL)
+    //如果是OpenGL,首先要取最小的那个z值，然后需要 *0.5+0.5 转换到 0-1 的深度值
+    if (isOpenGL) {
+        depth = minZ;
         depth = depth * 0.5f + 0.5f;
-
+    }
     //计算应该读取哪层mipmap
     uint mipmapLevel = (uint)clamp(log2(max(maxX - minX, maxY - minY) / 2 * depthTextureSize), 0, log2(depthTextureSize) - 4);
     //当前mipmap的大小
