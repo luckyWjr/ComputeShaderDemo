@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class GrassGenerator : MonoBehaviour
 {
@@ -23,7 +24,8 @@ public class GrassGenerator : MonoBehaviour
     uint[] args = new uint[5] { 0, 0, 0, 0, 0 };
     uint[] cullResultCountArray = new uint[1] { 0 };
 
-    int cullResultBufferId, vpMatrixId, positionBufferId, hizTextureId;
+    int cullResultBufferId, vpMatrixId, positionBufferId, hizTextureId, shadowMapTextureId;
+    int shadowCasterPassIndex;
 
     void Start()
     {
@@ -41,12 +43,15 @@ public class GrassGenerator : MonoBehaviour
         InitComputeBuffer();
         InitGrassPosition();
         InitComputeShader();
+        AddCommandBuffer();
     }
 
     void InitComputeShader() {
         kernel = compute.FindKernel("GrassCulling");
         compute.SetInt("grassCount", m_grassCount);
         compute.SetInt("depthTextureSize", depthTextureGenerator.depthTextureSize);
+        Debug.Log(Camera.main.projectionMatrix);
+        Debug.Log(GL.GetGPUProjectionMatrix(Camera.main.projectionMatrix, false));
         compute.SetBool("isOpenGL", Camera.main.projectionMatrix.Equals(GL.GetGPUProjectionMatrix(Camera.main.projectionMatrix, false)));
         compute.SetBuffer(kernel, "grassMatrixBuffer", grassMatrixBuffer);
         
@@ -54,6 +59,7 @@ public class GrassGenerator : MonoBehaviour
         vpMatrixId = Shader.PropertyToID("vpMatrix");
         hizTextureId = Shader.PropertyToID("hizTexture");
         positionBufferId = Shader.PropertyToID("positionBuffer");
+        shadowMapTextureId = Shader.PropertyToID("_ShadowMapTexture");
     }
 
     void InitComputeBuffer() {
@@ -64,12 +70,43 @@ public class GrassGenerator : MonoBehaviour
         cullResultCount = new ComputeBuffer(1, sizeof(uint), ComputeBufferType.IndirectArguments);
     }
 
+    void AddCommandBuffer()
+    {
+        //绘制草
+        CommandBuffer afterForwardOpaqueBuffer = new CommandBuffer();
+        afterForwardOpaqueBuffer.EnableShaderKeyword("LIGHTPROBE_SH");
+        afterForwardOpaqueBuffer.EnableShaderKeyword("SHADOWS_SCREEN");
+        MaterialPropertyBlock block = new MaterialPropertyBlock();
+        block.SetTexture(shadowMapTextureId, Shader.GetGlobalTexture(shadowMapTextureId));
+        afterForwardOpaqueBuffer.DrawMeshInstancedIndirect(grassMesh, subMeshIndex, grassMaterial, 0, argsBuffer, 0, block);
+        mainCamera.AddCommandBuffer(CameraEvent.AfterForwardOpaque, afterForwardOpaqueBuffer);
+
+        //生成深度图
+        shadowCasterPassIndex = grassMaterial.FindPass("ShadowCaster");
+        CommandBuffer afterDepthTextureBuffer = new CommandBuffer();
+        afterDepthTextureBuffer.DrawMeshInstancedIndirect(grassMesh, subMeshIndex, grassMaterial, shadowCasterPassIndex, argsBuffer);
+        mainCamera.AddCommandBuffer(CameraEvent.AfterDepthTexture, afterDepthTextureBuffer);
+
+        //生成阴影
+        CommandBuffer afterShadowMapPassBuffer = new CommandBuffer();
+        afterShadowMapPassBuffer.DrawMeshInstancedIndirect(grassMesh, subMeshIndex, grassMaterial, shadowCasterPassIndex, argsBuffer);
+        Light light = GameObject.Find("Directional Light").GetComponent<Light>();
+        light.AddCommandBuffer(LightEvent.AfterShadowMapPass, afterShadowMapPassBuffer);
+    }
+
     void Update()
     {
-        compute.SetTexture(kernel, hizTextureId, depthTextureGenerator.depthTexture);
+        //不执行这步的话，shadowCasterPassIndex 和 afterShadowMapPassBuffer 时，草的数量为0
+        args[1] = (uint)m_grassCount;
+        argsBuffer.SetData(args);
+    }
+
+    void OnPostRender()
+    {
         compute.SetMatrix(vpMatrixId, GL.GetGPUProjectionMatrix(mainCamera.projectionMatrix, false) * mainCamera.worldToCameraMatrix);
         cullResultBuffer.SetCounterValue(0);
         compute.SetBuffer(kernel, cullResultBufferId, cullResultBuffer);
+        compute.SetTexture(kernel, hizTextureId, depthTextureGenerator.depthTexture);
         compute.Dispatch(kernel, 1 + m_grassCount / 640, 1, 1);
         grassMaterial.SetBuffer(positionBufferId, cullResultBuffer);
 
@@ -79,7 +116,7 @@ public class GrassGenerator : MonoBehaviour
         args[1] = cullResultCountArray[0];
         argsBuffer.SetData(args);
 
-        Graphics.DrawMeshInstancedIndirect(grassMesh, subMeshIndex, grassMaterial, new Bounds(Vector3.zero, new Vector3(100.0f, 100.0f, 100.0f)), argsBuffer);
+        //Graphics.DrawMeshInstancedIndirect(grassMesh, subMeshIndex, grassMaterial, new Bounds(Vector3.zero, new Vector3(100.0f, 100.0f, 100.0f)), argsBuffer);
     }
 
     //获取每个草的世界坐标矩阵
