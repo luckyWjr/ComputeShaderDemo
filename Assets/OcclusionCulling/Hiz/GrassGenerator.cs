@@ -83,9 +83,9 @@ public class GrassGenerator : MonoBehaviour
 
         //生成深度图
         shadowCasterPassIndex = grassMaterial.FindPass("ShadowCaster");
-        CommandBuffer afterDepthTextureBuffer = new CommandBuffer();
-        afterDepthTextureBuffer.DrawMeshInstancedIndirect(grassMesh, subMeshIndex, grassMaterial, shadowCasterPassIndex, argsBuffer);
-        mainCamera.AddCommandBuffer(CameraEvent.AfterDepthTexture, afterDepthTextureBuffer);
+        //CommandBuffer afterDepthTextureBuffer = new CommandBuffer();
+        //afterDepthTextureBuffer.DrawMeshInstancedIndirect(grassMesh, subMeshIndex, grassMaterial, shadowCasterPassIndex, argsBuffer);
+        //mainCamera.AddCommandBuffer(CameraEvent.AfterDepthTexture, afterDepthTextureBuffer);
 
         //生成阴影
         CommandBuffer afterShadowMapPassBuffer = new CommandBuffer();
@@ -94,12 +94,12 @@ public class GrassGenerator : MonoBehaviour
         light.AddCommandBuffer(LightEvent.AfterShadowMapPass, afterShadowMapPassBuffer);
     }
 
-    void Update()
-    {
-        //不执行这步的话，shadowCasterPassIndex 和 afterShadowMapPassBuffer 时，草的数量为0
-        args[1] = (uint)m_grassCount;
-        argsBuffer.SetData(args);
-    }
+    //void Update()
+    //{
+    //    //不执行这步的话，shadowCasterPassIndex 和 afterShadowMapPassBuffer 时，草的数量为0
+    //    args[1] = (uint)m_grassCount;
+    //    argsBuffer.SetData(args);
+    //}
 
     void OnPostRender()
     {
