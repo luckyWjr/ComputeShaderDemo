@@ -1,4 +1,4 @@
-Shader "Unlit/InstanceGrass"
+Shader "Custom/InstanceGrass"
 {
 	Properties
 	{

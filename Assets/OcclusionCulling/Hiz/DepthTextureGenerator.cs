@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 [RequireComponent(typeof(Camera))]
 public class DepthTextureGenerator : MonoBehaviour {
@@ -21,17 +22,16 @@ public class DepthTextureGenerator : MonoBehaviour {
     Material m_depthTextureMaterial;
     const RenderTextureFormat m_depthTextureFormat = RenderTextureFormat.RHalf;//深度取值范围0-1，单通道即可。
 
-    int m_textureSizeShaderID;
-    int m_depthTextureShaderID;
+    CommandBuffer m_calulateDepthCommandBuffer;
 
     void Start() {
         m_depthTextureMaterial = new Material(depthTextureShader);
         Camera.main.depthTextureMode |= DepthTextureMode.Depth;
 
-        m_textureSizeShaderID = Shader.PropertyToID("_MainTexSize");
-        m_depthTextureShaderID = Shader.PropertyToID("_CameraDepthTexture");
-
         InitDepthTexture();
+
+        m_calulateDepthCommandBuffer = new CommandBuffer() { name = "Calculate DepthTexture" };
+        Camera.main.AddCommandBuffer(CameraEvent.AfterDepthTexture, m_calulateDepthCommandBuffer);
     }
 
     void InitDepthTexture() {
@@ -44,7 +44,8 @@ public class DepthTextureGenerator : MonoBehaviour {
     }
 
     //生成mipmap
-    void OnPostRender() {
+    void OnPreRender() {
+        m_calulateDepthCommandBuffer.Clear();
         int w = m_depthTexture.width;
         int mipmapLevel = 0;
 
@@ -57,15 +58,14 @@ public class DepthTextureGenerator : MonoBehaviour {
             currentRenderTexture.filterMode = FilterMode.Point;
             if(preRenderTexture == null) {
                 //Mipmap[0]即copy原始的深度图
-                Graphics.Blit(Shader.GetGlobalTexture(m_depthTextureShaderID), currentRenderTexture);
+                m_calulateDepthCommandBuffer.Blit(null, currentRenderTexture, m_depthTextureMaterial, 1);
             }
             else {
                 //将Mipmap[i] Blit到Mipmap[i+1]上
-                m_depthTextureMaterial.SetInt(m_textureSizeShaderID, w);
-                Graphics.Blit(preRenderTexture, currentRenderTexture, m_depthTextureMaterial);
+                m_calulateDepthCommandBuffer.Blit(preRenderTexture, currentRenderTexture, m_depthTextureMaterial, 0);
                 RenderTexture.ReleaseTemporary(preRenderTexture);
             }
-            Graphics.CopyTexture(currentRenderTexture, 0, 0, m_depthTexture, 0, mipmapLevel);
+            m_calulateDepthCommandBuffer.CopyTexture(currentRenderTexture, 0, 0, m_depthTexture, 0, mipmapLevel);
             preRenderTexture = currentRenderTexture;
 
             w /= 2;
@@ -74,8 +74,10 @@ public class DepthTextureGenerator : MonoBehaviour {
         RenderTexture.ReleaseTemporary(preRenderTexture);
     }
 
-    void OnDestroy() {
+    void OnDisable() {
         m_depthTexture?.Release();
         Destroy(m_depthTexture);
+
+        Camera.main.RemoveCommandBuffer(CameraEvent.AfterDepthTexture, m_calulateDepthCommandBuffer);
     }
 }

@@ -1,4 +1,4 @@
-Shader "Instanced/InstancedShader" {
+Shader "Custom/InstancedShader" {
         Properties{
             _MainTex("Albedo (RGB)", 2D) = "white" {}
         }

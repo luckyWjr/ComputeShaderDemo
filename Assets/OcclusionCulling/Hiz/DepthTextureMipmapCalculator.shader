@@ -2,7 +2,6 @@ Shader "Custom/DepthTextureMipmapCalculator"
 {
     Properties{
         [HideInInspector] _MainTex("Previous Mipmap", 2D) = "black" {}
-        [HideInInspector] _MainTexSize("Texture Size", int) = 0
     }
         SubShader{
             Pass {
@@ -16,7 +15,7 @@ Shader "Custom/DepthTextureMipmapCalculator"
                 #pragma fragment frag
 
                 sampler2D _MainTex;
-                int _MainTexSize;
+                float4 _MainTex_TexelSize;
 
                 struct appdata
                 {
@@ -32,7 +31,7 @@ Shader "Custom/DepthTextureMipmapCalculator"
                 inline float CalculatorMipmapDepth(float2 uv)
                 {
                     float4 depth;
-                    float offset = 0.5f / _MainTexSize;
+                    float offset = 0.5f / _MainTex_TexelSize.z;
                     depth.x = tex2D(_MainTex, uv);
                     depth.y = tex2D(_MainTex, uv + float2(0, offset));
                     depth.z = tex2D(_MainTex, uv + float2(offset, 0));
@@ -53,6 +52,44 @@ Shader "Custom/DepthTextureMipmapCalculator"
                 float4 frag(v2f input) : Color
                 {
                     float depth = CalculatorMipmapDepth(input.uv);
+                    return float4(depth, 0, 0, 1.0f);
+                }
+                ENDCG
+            }
+
+            Pass {
+                Cull Off
+                ZWrite Off
+                ZTest Always
+
+                CGPROGRAM
+                #pragma target 3.0
+                #pragma vertex vert
+                #pragma fragment frag
+
+                sampler2D _CameraDepthTexture;
+
+                struct appdata
+                {
+                    float4 vertex : POSITION;
+                    float2 uv : TEXCOORD0;
+                };
+                struct v2f
+                {
+                    float4 vertex : SV_POSITION;
+                    float2 uv : TEXCOORD0;
+                };
+
+                v2f vert(appdata v)
+                {
+                    v2f o;
+                    o.vertex = UnityObjectToClipPos(v.vertex.xyz);
+                    o.uv = v.uv;
+                    return o;
+                }
+                float4 frag(v2f input) : Color
+                {
+                    float depth = tex2D(_CameraDepthTexture, input.uv);
                     return float4(depth, 0, 0, 1.0f);
                 }
                 ENDCG

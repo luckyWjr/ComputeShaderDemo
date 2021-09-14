@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class GrassGenerator : MonoBehaviour
 {
@@ -10,10 +11,12 @@ public class GrassGenerator : MonoBehaviour
     public int GrassCountPerRaw = 300;//每行草的数量
     public DepthTextureGenerator depthTextureGenerator;
     public ComputeShader compute;//剔除的ComputeShader
+    public Texture whiteTexture;
 
     int m_grassCount;
     int kernel;
     Camera mainCamera;
+    Light mainLight;
 
     ComputeBuffer argsBuffer;
     ComputeBuffer grassMatrixBuffer;//所有草的世界坐标矩阵
@@ -21,16 +24,22 @@ public class GrassGenerator : MonoBehaviour
     ComputeBuffer cullResultCount;//剔除后的数量
 
     uint[] args = new uint[5] { 0, 0, 0, 0, 0 };
-    uint[] cullResultCountArray = new uint[1] { 0 };
 
-    int cullResultBufferId, vpMatrixId, positionBufferId, hizTextureId;
+    int cullResultBufferId, vpMatrixId, positionBufferId, hizTextureId, shadowMapTextureId;
+    int shadowCasterPassIndex;
+
+    CommandBuffer m_computeShaderCommandBuffer, m_collectShadowCommandBuffer, m_drawGrassCommandBuffer;
+    MaterialPropertyBlock m_materialBlock;
+
+    //CommandBuffer b;//单颗草绘制测试
 
     void Start()
     {
         m_grassCount = GrassCountPerRaw * GrassCountPerRaw;
         mainCamera = Camera.main;
+        mainLight = GameObject.Find("Directional Light").GetComponent<Light>();
 
-        if(grassMesh != null) {
+        if (grassMesh != null) {
             args[0] = grassMesh.GetIndexCount(subMeshIndex);
             args[2] = grassMesh.GetIndexStart(subMeshIndex);
             args[3] = grassMesh.GetBaseVertex(subMeshIndex);
@@ -41,6 +50,7 @@ public class GrassGenerator : MonoBehaviour
         InitComputeBuffer();
         InitGrassPosition();
         InitComputeShader();
+        AddCommandBuffer();
     }
 
     void InitComputeShader() {
@@ -54,6 +64,8 @@ public class GrassGenerator : MonoBehaviour
         vpMatrixId = Shader.PropertyToID("vpMatrix");
         hizTextureId = Shader.PropertyToID("hizTexture");
         positionBufferId = Shader.PropertyToID("positionBuffer");
+        shadowMapTextureId = Shader.PropertyToID("_ShadowMapTexture");
+        shadowCasterPassIndex = grassMaterial.FindPass("ShadowCaster");
     }
 
     void InitComputeBuffer() {
@@ -64,23 +76,64 @@ public class GrassGenerator : MonoBehaviour
         cullResultCount = new ComputeBuffer(1, sizeof(uint), ComputeBufferType.IndirectArguments);
     }
 
-    void Update()
+    void AddCommandBuffer()
     {
-        compute.SetTexture(kernel, hizTextureId, depthTextureGenerator.depthTexture);
-        compute.SetMatrix(vpMatrixId, GL.GetGPUProjectionMatrix(mainCamera.projectionMatrix, false) * mainCamera.worldToCameraMatrix);
-        cullResultBuffer.SetCounterValue(0);
-        compute.SetBuffer(kernel, cullResultBufferId, cullResultBuffer);
-        compute.Dispatch(kernel, 1 + m_grassCount / 640, 1, 1);
-        grassMaterial.SetBuffer(positionBufferId, cullResultBuffer);
+        m_computeShaderCommandBuffer = new CommandBuffer() { name = "Dispatch Compute" };
+        mainCamera.AddCommandBuffer(CameraEvent.AfterDepthTexture, m_computeShaderCommandBuffer);
 
-        //获取实际要渲染的数量
-        ComputeBuffer.CopyCount(cullResultBuffer, cullResultCount, 0);
-        cullResultCount.GetData(cullResultCountArray);
-        args[1] = cullResultCountArray[0];
-        argsBuffer.SetData(args);
+        m_collectShadowCommandBuffer = new CommandBuffer() { name = "Collect Shadow" };
+        mainLight.AddCommandBuffer(LightEvent.AfterShadowMapPass, m_collectShadowCommandBuffer);
 
-        Graphics.DrawMeshInstancedIndirect(grassMesh, subMeshIndex, grassMaterial, new Bounds(Vector3.zero, new Vector3(100.0f, 100.0f, 100.0f)), argsBuffer);
+        m_drawGrassCommandBuffer = new CommandBuffer() { name = "Draw Grass" };
+        mainCamera.AddCommandBuffer(CameraEvent.AfterForwardOpaque, m_drawGrassCommandBuffer);
+
+        m_materialBlock = new MaterialPropertyBlock();
+
+        //b = new CommandBuffer();
+        //mainCamera.AddCommandBuffer(CameraEvent.AfterForwardOpaque, b);
     }
+
+    void OnPreRender()
+    {
+        //掉帧处理
+        //for (int i = 0; i < 200000; i++)
+        //{
+        //    string s = i.ToString() + i;
+        //}
+
+        //AfterDepthTexture：执行compute shader
+        m_computeShaderCommandBuffer.Clear();
+        m_computeShaderCommandBuffer.SetComputeMatrixParam(compute, vpMatrixId, GL.GetGPUProjectionMatrix(mainCamera.projectionMatrix, false) * mainCamera.worldToCameraMatrix);
+        m_computeShaderCommandBuffer.SetComputeBufferCounterValue(cullResultBuffer, 0);
+        m_computeShaderCommandBuffer.SetComputeBufferParam(compute, kernel, cullResultBufferId, cullResultBuffer);
+        m_computeShaderCommandBuffer.SetComputeTextureParam(compute, kernel, hizTextureId, depthTextureGenerator.depthTexture);
+        m_computeShaderCommandBuffer.DispatchCompute(compute, kernel, 1 + m_grassCount / 640, 1, 1);
+        m_computeShaderCommandBuffer.CopyCounterValue(cullResultBuffer, argsBuffer, sizeof(uint));
+
+        //AfterShadowMapPass：执行处理阴影
+        m_materialBlock.Clear();
+        m_materialBlock.SetBuffer(positionBufferId, cullResultBuffer);
+        m_collectShadowCommandBuffer.Clear();
+        m_collectShadowCommandBuffer.DrawMeshInstancedIndirect(grassMesh, subMeshIndex, grassMaterial, shadowCasterPassIndex, argsBuffer, 0, m_materialBlock);
+
+        //AfterForwardOpaque：画草
+        m_drawGrassCommandBuffer.Clear();
+        //解决草偏暗的问题
+        m_drawGrassCommandBuffer.EnableShaderKeyword("LIGHTPROBE_SH");
+        m_drawGrassCommandBuffer.EnableShaderKeyword("SHADOWS_SCREEN");
+        m_materialBlock.SetTexture(shadowMapTextureId, whiteTexture);
+        m_drawGrassCommandBuffer.DrawMeshInstancedIndirect(grassMesh, subMeshIndex, grassMaterial, 0, argsBuffer, 0, m_materialBlock);
+
+        //b.Clear();
+        //b.EnableShaderKeyword("LIGHTPROBE_SH");
+        //b.EnableShaderKeyword("SHADOWS_SCREEN");
+        //b.DrawMesh(grassMesh, Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.one), grassMaterial, 0, 0);
+    }
+
+    //void Update()
+    //{
+    //    Graphics.DrawMesh(grassMesh, Matrix4x4.TRS(new Vector3(1, 0, 0), Quaternion.identity, Vector3.one), grassMaterial, 0);
+    //}
 
     //获取每个草的世界坐标矩阵
     void InitGrassPosition() {
@@ -120,5 +173,9 @@ public class GrassGenerator : MonoBehaviour
 
         argsBuffer?.Release();
         argsBuffer = null;
+
+        mainCamera.RemoveCommandBuffer(CameraEvent.AfterDepthTexture, m_computeShaderCommandBuffer);
+        mainLight.RemoveCommandBuffer(LightEvent.AfterShadowMapPass, m_collectShadowCommandBuffer);
+        mainCamera.RemoveCommandBuffer(CameraEvent.AfterForwardOpaque, m_drawGrassCommandBuffer);
     }
 }
