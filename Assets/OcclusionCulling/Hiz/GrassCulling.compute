@@ -82,16 +82,14 @@ void GrassCulling(uint3 id : SV_DispatchThreadID)
         depth = minZ;
         depth = depth * 0.5f + 0.5f;
     }
-
     //计算应该读取哪层mipmap
-    uint mipmapLevel = (uint)clamp(log2(max(maxX - minX, maxY - minY) * 0.5f * depthTextureSize), 0, log2(depthTextureSize) - 4);
+    uint mipmapLevel = (uint)clamp(log2(max(maxX - minX, maxY - minY) / 2 * depthTextureSize), 0, log2(depthTextureSize) - 4);
     //当前mipmap的大小
     uint size = depthTextureSize / (1 << mipmapLevel);
 
-    //左下角和右下角点所在的像素,不使用clamp会导致相机左右边出现一条剔除不掉的草，因为有些草部分超框了
+    //左下角和右下角点所在的像素
     uint2 pixelLeftBottom = uint2(clamp(uvLeftBottom.x * size, 0, size - 1), clamp(uvLeftBottom.y * size, 0, size - 1));
     uint2 pixelRightTop = uint2(clamp(uvRightTop.x * size, 0, size - 1), clamp(uvRightTop.y * size, 0, size - 1));
-    
     //采样对应深度图的对应像素的深度值，并且作比较
     float depthInTexture = hizTexture.mips[mipmapLevel][pixelLeftBottom].r;
     if (isOpenGL) {
