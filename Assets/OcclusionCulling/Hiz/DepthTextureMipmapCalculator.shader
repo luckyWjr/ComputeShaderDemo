@@ -15,7 +15,6 @@ Shader "Custom/DepthTextureMipmapCalculator"
                 #pragma fragment frag
 
                 sampler2D _MainTex;
-                int _MainTexSize;
                 float4 _MainTex_TexelSize;
 
                 struct appdata
@@ -32,7 +31,7 @@ Shader "Custom/DepthTextureMipmapCalculator"
                 inline float CalculatorMipmapDepth(float2 uv)
                 {
                     float4 depth;
-                    float offset = 0.5f / _MainTex_TexelSize.z;
+                    float offset = _MainTex_TexelSize.x / 2;
                     depth.x = tex2D(_MainTex, uv);
                     depth.y = tex2D(_MainTex, uv + float2(0, offset));
                     depth.z = tex2D(_MainTex, uv + float2(offset, 0));
