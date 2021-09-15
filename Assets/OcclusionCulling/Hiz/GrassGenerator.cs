@@ -18,10 +18,8 @@ public class GrassGenerator : MonoBehaviour
     ComputeBuffer argsBuffer;
     ComputeBuffer grassMatrixBuffer;//所有草的世界坐标矩阵
     ComputeBuffer cullResultBuffer;//剔除后的结果
-    ComputeBuffer cullResultCount;//剔除后的数量
 
     uint[] args = new uint[5] { 0, 0, 0, 0, 0 };
-    uint[] cullResultCountArray = new uint[1] { 0 };
 
     int cullResultBufferId, vpMatrixId, positionBufferId, hizTextureId;
 
@@ -35,8 +33,6 @@ public class GrassGenerator : MonoBehaviour
             args[2] = grassMesh.GetIndexStart(subMeshIndex);
             args[3] = grassMesh.GetBaseVertex(subMeshIndex);
         }
-        else
-            args[0] = args[1] = args[2] = args[3] = 0;
 
         InitComputeBuffer();
         InitGrassPosition();
@@ -59,9 +55,9 @@ public class GrassGenerator : MonoBehaviour
     void InitComputeBuffer() {
         if(grassMatrixBuffer != null) return;
         argsBuffer = new ComputeBuffer(1, args.Length * sizeof(uint), ComputeBufferType.IndirectArguments);
+        argsBuffer.SetData(args);
         grassMatrixBuffer = new ComputeBuffer(m_grassCount, sizeof(float) * 16);
         cullResultBuffer = new ComputeBuffer(m_grassCount, sizeof(float) * 16, ComputeBufferType.Append);
-        cullResultCount = new ComputeBuffer(1, sizeof(uint), ComputeBufferType.IndirectArguments);
     }
 
     void Update()
@@ -74,11 +70,7 @@ public class GrassGenerator : MonoBehaviour
         grassMaterial.SetBuffer(positionBufferId, cullResultBuffer);
 
         //获取实际要渲染的数量
-        ComputeBuffer.CopyCount(cullResultBuffer, cullResultCount, 0);
-        cullResultCount.GetData(cullResultCountArray);
-        args[1] = cullResultCountArray[0];
-        argsBuffer.SetData(args);
-
+        ComputeBuffer.CopyCount(cullResultBuffer, argsBuffer, sizeof(uint));
         Graphics.DrawMeshInstancedIndirect(grassMesh, subMeshIndex, grassMaterial, new Bounds(Vector3.zero, new Vector3(100.0f, 100.0f, 100.0f)), argsBuffer);
     }
 
@@ -114,9 +106,6 @@ public class GrassGenerator : MonoBehaviour
 
         cullResultBuffer?.Release();
         cullResultBuffer = null;
-
-        cullResultCount?.Release();
-        cullResultCount = null;
 
         argsBuffer?.Release();
         argsBuffer = null;

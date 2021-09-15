@@ -21,14 +21,12 @@ public class DepthTextureGenerator : MonoBehaviour {
     Material m_depthTextureMaterial;
     const RenderTextureFormat m_depthTextureFormat = RenderTextureFormat.RHalf;//深度取值范围0-1，单通道即可。
 
-    int m_textureSizeShaderID;
     int m_depthTextureShaderID;
 
     void Start() {
         m_depthTextureMaterial = new Material(depthTextureShader);
         Camera.main.depthTextureMode |= DepthTextureMode.Depth;
 
-        m_textureSizeShaderID = Shader.PropertyToID("_MainTexSize");
         m_depthTextureShaderID = Shader.PropertyToID("_CameraDepthTexture");
 
         InitDepthTexture();
@@ -61,7 +59,6 @@ public class DepthTextureGenerator : MonoBehaviour {
             }
             else {
                 //将Mipmap[i] Blit到Mipmap[i+1]上
-                m_depthTextureMaterial.SetInt(m_textureSizeShaderID, w);
                 Graphics.Blit(preRenderTexture, currentRenderTexture, m_depthTextureMaterial);
                 RenderTexture.ReleaseTemporary(preRenderTexture);
             }

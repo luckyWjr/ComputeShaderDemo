@@ -2,7 +2,6 @@ Shader "Custom/DepthTextureMipmapCalculator"
 {
     Properties{
         [HideInInspector] _MainTex("Previous Mipmap", 2D) = "black" {}
-        [HideInInspector] _MainTexSize("Texture Size", int) = 0
     }
         SubShader{
             Pass {
@@ -17,6 +16,7 @@ Shader "Custom/DepthTextureMipmapCalculator"
 
                 sampler2D _MainTex;
                 int _MainTexSize;
+                float4 _MainTex_TexelSize;
 
                 struct appdata
                 {
@@ -32,7 +32,7 @@ Shader "Custom/DepthTextureMipmapCalculator"
                 inline float CalculatorMipmapDepth(float2 uv)
                 {
                     float4 depth;
-                    float offset = 0.5f / _MainTexSize;
+                    float offset = 0.5f / _MainTex_TexelSize.z;
                     depth.x = tex2D(_MainTex, uv);
                     depth.y = tex2D(_MainTex, uv + float2(0, offset));
                     depth.z = tex2D(_MainTex, uv + float2(offset, 0));

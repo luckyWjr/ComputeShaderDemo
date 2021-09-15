@@ -13,12 +13,10 @@ public class DrawCube : MonoBehaviour
     int cachedSubMeshIndex = -1;
     ComputeBuffer argsBuffer;
     uint[] args = new uint[5] { 0, 0, 0, 0, 0 };
-    uint[] cullResultCountArray = new uint[1] { 0 };
 
     public ComputeShader compute;
     ComputeBuffer localToWorldMatrixBuffer;
     ComputeBuffer cullResult;
-    ComputeBuffer cullResultCount;
     int kernel;
     Camera mainCamera;
 
@@ -27,7 +25,6 @@ public class DrawCube : MonoBehaviour
         mainCamera = Camera.main;
         cullResult = new ComputeBuffer(instanceCount, sizeof(float) * 16, ComputeBufferType.Append);
         argsBuffer = new ComputeBuffer(1, args.Length * sizeof(uint), ComputeBufferType.IndirectArguments);
-        cullResultCount = new ComputeBuffer(1, sizeof(uint), ComputeBufferType.IndirectArguments);
 
         UpdateBuffers();
     }
@@ -48,10 +45,7 @@ public class DrawCube : MonoBehaviour
         instanceMaterial.SetBuffer("positionBuffer", cullResult);
 
         //获取实际要渲染的数量
-        ComputeBuffer.CopyCount(cullResult, cullResultCount, 0);
-        cullResultCount.GetData(cullResultCountArray);
-        args[1] = cullResultCountArray[0];
-        argsBuffer.SetData(args);
+        ComputeBuffer.CopyCount(cullResult, argsBuffer, sizeof(uint));
 
         Graphics.DrawMeshInstancedIndirect(instanceMesh, subMeshIndex, instanceMaterial, new Bounds(Vector3.zero, new Vector3(100.0f, 100.0f, 100.0f)), argsBuffer);
     }
@@ -84,7 +78,8 @@ public class DrawCube : MonoBehaviour
         } else {
             args[0] = args[1] = args[2] = args[3] = 0;
         }
-        
+        argsBuffer.SetData(args);
+
         cachedInstanceCount = instanceCount;
         cachedSubMeshIndex = subMeshIndex;
     }
@@ -95,9 +90,6 @@ public class DrawCube : MonoBehaviour
 
         cullResult?.Release();
         cullResult = null;
-
-        cullResultCount?.Release();
-        cullResultCount = null;
 
         argsBuffer?.Release();
         argsBuffer = null;
