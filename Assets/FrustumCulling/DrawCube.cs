@@ -47,7 +47,7 @@ public class DrawCube : MonoBehaviour
         //获取实际要渲染的数量
         ComputeBuffer.CopyCount(cullResult, argsBuffer, sizeof(uint));
 
-        Graphics.DrawMeshInstancedIndirect(instanceMesh, subMeshIndex, instanceMaterial, new Bounds(Vector3.zero, new Vector3(100.0f, 100.0f, 100.0f)), argsBuffer);
+        Graphics.DrawMeshInstancedIndirect(instanceMesh, subMeshIndex, instanceMaterial, new Bounds(Vector3.zero, new Vector3(200.0f, 200.0f, 200.0f)), argsBuffer);
     }
 
     void UpdateBuffers() {

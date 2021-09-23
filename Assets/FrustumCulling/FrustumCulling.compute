@@ -4,8 +4,6 @@ uint instanceCount;
 StructuredBuffer<float4x4> input;
 float4 planes[6];
 AppendStructuredBuffer<float4x4> cullresult;
-float3 boundMin = float3(-0.5, -0.5, -0.5);
-float3 boundMax = float3(0.5, 0.5, 0.5);
 
 bool IsOutsideThePlane(float4 plane, float3 pointPosition)
 {
@@ -21,6 +19,8 @@ void ViewPortCulling(uint3 id : SV_DispatchThreadID)
         return;
     float4x4 info = input[id.x];
 
+    float3 boundMin = float3(-1.5, 0, -1.5);
+    float3 boundMax = float3(1.5, 7, 1.5);
     float4 boundVerts[8];//AABB8个顶点坐标
     boundVerts[0] = mul(info, float4(boundMin, 1));
     boundVerts[1] = mul(info, float4(boundMax, 1));
