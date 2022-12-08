@@ -83,7 +83,7 @@ void GrassCulling(uint3 id : SV_DispatchThreadID)
         depth = depth * 0.5f + 0.5f;
     }
     //计算应该读取哪层mipmap
-    uint mipmapLevel = (uint)clamp(log2(max(maxX - minX, maxY - minY) / 2 * depthTextureSize), 0, log2(depthTextureSize) - 4);
+    uint mipmapLevel = (uint)clamp(depthTextureSize * 2 / log2(max(maxX - minX, maxY - minY)), 0, log2(depthTextureSize) - 4);
     //当前mipmap的大小
     uint size = depthTextureSize / (1 << mipmapLevel);
 
