@@ -1,0 +1,79 @@
+#pragma kernel HorzBlurCS
+#pragma kernel VertBlurCS
+
+static const int maxBlurRadius = 5;
+#define N 256
+#define CacheSize (N + 2 * maxBlurRadius)
+
+// constant buffer
+int radius;
+float weights[11];
+
+// srv
+Texture2D source;
+
+RWTexture2D<float4> result;
+
+// groupshared指的是thread group中所有thread都可以访问的共享内存
+// 用cache[CacheSize]来存储要被模糊的像素，避免多次重复的采样操作
+groupshared float4 cache[CacheSize];
+
+[numthreads(N, 1, 1)]
+void HorzBlurCS(int3 groupThreadID : SV_GroupThreadID, uint3 dispatchThreadID : SV_DispatchThreadID)
+{
+    // groupThreadID.x的取值范围为[0, N-1]
+    // dispatchThreadID 即 像素的x坐标
+
+    // 计算左边界的额外几个
+    if (groupThreadID.x < radius)
+    {
+        int x = max(dispatchThreadID.x - radius, 0);
+        cache[groupThreadID.x] = source[int2(x, dispatchThreadID.y)];
+    }
+
+    // 计算右边界的额外几个
+    if (groupThreadID.x >= N - radius)
+    {
+        int x = min(dispatchThreadID.x + radius, source.Length.x - 1);
+        cache[groupThreadID.x + 2 * radius] = source[int2(x, dispatchThreadID.y)];
+    }
+
+    // 一一对应，不能超框
+    cache[groupThreadID.x + radius] = source[min(dispatchThreadID.xy, source.Length.xy - 1)];
+
+    // 等待所有线程执行完上述的操作
+    GroupMemoryBarrierWithGroupSync();
+
+    float4 blurColor = float4(0, 0, 0, 0);
+    for (int i = -radius; i <= radius; ++i)
+    {
+        int k = groupThreadID.x + radius + i;
+        blurColor += weights[i + radius] * cache[k];
+    }
+    result[dispatchThreadID.xy] = blurColor;
+}
+
+[numthreads(1, N, 1)]
+void VertBlurCS(int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID : SV_DispatchThreadID)
+{
+    if (groupThreadID.y < radius)
+    {
+        int y = max(dispatchThreadID.y - radius, 0);
+        cache[groupThreadID.y] = source[int2(dispatchThreadID.x, y)];
+    }
+    if (groupThreadID.y >= N - radius)
+    {
+        int y = min(dispatchThreadID.y + radius, source.Length.y - 1);
+        cache[groupThreadID.y + 2 * radius] = source[int2(dispatchThreadID.x, y)];
+    }
+    cache[groupThreadID.y + radius] = source[min(dispatchThreadID.xy, source.Length.xy - 1)];
+    GroupMemoryBarrierWithGroupSync();
+
+    float4 blurColor = float4(0, 0, 0, 0);
+    for (int i = -radius; i <= radius; ++i)
+    {
+        int k = groupThreadID.y + radius + i;
+        blurColor += weights[i + radius] * cache[k];
+    }
+    result[dispatchThreadID.xy] = blurColor;
+}
